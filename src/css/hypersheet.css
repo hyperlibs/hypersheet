@@ -183,3 +183,131 @@
 .hs-cell-chip { min-width: 4rem; }
 .hs-cell-dropdown { min-width: 6rem; }
 .hs-cell-checkbox { text-align: center; }
+.hs-cell-date { min-width: 7rem; cursor: pointer; }
+.hs-cell-daterange { min-width: 12rem; cursor: pointer; }
+
+/* --- Date Picker Popup --- */
+.hs-datepicker {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 50;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  padding: 0.75rem;
+  width: 17rem;
+  font-size: 0.8rem;
+}
+
+.hs-datepicker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.hs-datepicker-nav {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.hs-datepicker-nav:hover { background: #f3f4f6; }
+
+.hs-datepicker-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.85rem;
+}
+
+.hs-datepicker-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.hs-datepicker-grid th {
+  padding: 0.25rem 0;
+  font-size: 0.65rem;
+  color: #9ca3af;
+  font-weight: 600;
+  text-align: center;
+}
+
+.hs-datepicker-grid td {
+  padding: 0.15rem;
+  text-align: center;
+}
+
+.hs-datepicker-day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: #374151;
+  transition: background 0.1s;
+}
+
+.hs-datepicker-day:hover { background: #f3f4f6; }
+.hs-datepicker-day.today { font-weight: 700; color: #6366f1; }
+.hs-datepicker-day.selected { background: #6366f1; color: #fff; }
+.hs-datepicker-day.selected:hover { background: #4f46e5; }
+
+/* --- Date Range Popup --- */
+.hs-daterange {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 50;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  padding: 0.75rem;
+  width: 18rem;
+  font-size: 0.8rem;
+}
+
+.hs-daterange-inputs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.hs-daterange-inputs input {
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+}
+
+.hs-daterange-inputs input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+}
+
+.hs-daterange-apply {
+  width: 100%;
+  padding: 0.35rem;
+  border: none;
+  border-radius: 0.25rem;
+  background: #6366f1;
+  color: #fff;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.hs-daterange-apply:hover { background: #4f46e5; }

@@ -85,6 +85,25 @@
       if (!rule || !val) return null;
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(val)) ? null : { field: colDef.field, rule: 'email', message: colDef.title + ' must be a valid email' };
     },
+    date: function (val, rule, colDef) {
+      if (!rule || !val) return null;
+      var d = new Date(val);
+      return isNaN(d.getTime()) ? { field: colDef.field, rule: 'date', message: colDef.title + ' must be a valid date' } : null;
+    },
+    minDate: function (val, rule, colDef) {
+      if (!rule || !val) return null;
+      var d = new Date(val);
+      var min = new Date(rule);
+      if (isNaN(d.getTime()) || isNaN(min.getTime())) return null;
+      return d >= min ? null : { field: colDef.field, rule: 'minDate', message: colDef.title + ' must be on or after ' + rule, minDate: rule };
+    },
+    maxDate: function (val, rule, colDef) {
+      if (!rule || !val) return null;
+      var d = new Date(val);
+      var max = new Date(rule);
+      if (isNaN(d.getTime()) || isNaN(max.getTime())) return null;
+      return d <= max ? null : { field: colDef.field, rule: 'maxDate', message: colDef.title + ' must be on or before ' + rule, maxDate: rule };
+    },
   };
 
   function validateCell(val, colDef, allRows) {

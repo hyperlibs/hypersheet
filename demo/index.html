@@ -98,7 +98,7 @@
         Events bubble up to demoApp() for data operations.
       -->
       <div id="main-grid"
-           x-data="hypersheet({ rows: rows.length, cols: 5, sortable: true })"
+           x-data="hypersheet({ rows: rows.length, cols: 7, sortable: true })"
            @keydown.window="handleKey($event)">
 
         <table class="hs-grid">
@@ -110,6 +110,8 @@
               <th class="hs-cell hs-sort-btn" @click="toggleSort(2)">Status <span class="hs-sort-icon">↕</span></th>
               <th class="hs-cell hs-sort-btn" @click="toggleSort(3)">Tier <span class="hs-sort-icon">↕</span></th>
               <th class="hs-cell hs-sort-btn" @click="toggleSort(4)">Tasks <span class="hs-sort-icon">↕</span></th>
+              <th class="hs-cell hs-sort-btn" @click="toggleSort(5)">Date <span class="hs-sort-icon">↕</span></th>
+              <th class="hs-cell">Date Range</th>
             </tr>
           </thead>
           <tbody>
@@ -191,6 +193,66 @@
                         <span x-text="task.label"></span>
                       </label>
                     </template>
+                  </div>
+                </td>
+
+                <!-- Date (Date Picker) -->
+                <td class="hs-cell hs-cell-date"
+                    :data-row="rIdx" data-col="5"
+                    :class="{'hs-focused': focusedKey === rIdx + ':5', 'hs-selected': isSelected(rIdx, 5)}"
+                    @mousedown="handleCellMouseDown(rIdx, 5, $event); $dispatch('cell-focus', {row:rIdx, col:5})"
+                    @mouseenter="handleCellMouseEnter(rIdx, 5)">
+                  <input type="text" class="hs-cell-input" x-model="row.date"
+                         @focus="openDatePicker(rIdx, 5)"
+                         @blur="setTimeout(() => closeDatePicker(), 200)"
+                         placeholder="YYYY-MM-DD"
+                         style="cursor:pointer;">
+                  <div class="hs-datepicker" x-show="datePickerTarget && datePickerTarget.row === rIdx && datePickerTarget.col === 5"
+                       @click.outside="closeDatePicker()" x-cloak>
+                    <div class="hs-datepicker-header">
+                      <button class="hs-datepicker-nav" @click="dpPrevMonth" type="button">◀</button>
+                      <span class="hs-datepicker-label" x-text="dpMonthLabel()"></span>
+                      <button class="hs-datepicker-nav" @click="dpNextMonth" type="button">▶</button>
+                    </div>
+                    <table class="hs-datepicker-grid">
+                      <thead><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></thead>
+                      <tbody>
+                        <template x-for="week in dpGrid()" :key="dpGrid().indexOf(week)">
+                          <tr>
+                            <template x-for="cell in week" :key="cell ? cell.day : 'e'">
+                              <td>
+                                <template x-if="cell">
+                                  <span class="hs-datepicker-day" :class="{ today: cell.isToday }"
+                                        @click="dpSelectDate(cell.day); $el.closest('tr').querySelector('input')?.focus()"
+                                        x-text="cell.day"></span>
+                                </template>
+                              </td>
+                            </template>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                </td>
+
+                <!-- Date Range -->
+                <td class="hs-cell hs-cell-daterange"
+                    :data-row="rIdx" data-col="6"
+                    :class="{'hs-focused': focusedKey === rIdx + ':6', 'hs-selected': isSelected(rIdx, 6)}"
+                    @mousedown="handleCellMouseDown(rIdx, 6, $event); $dispatch('cell-focus', {row:rIdx, col:6})"
+                    @mouseenter="handleCellMouseEnter(rIdx, 6)">
+                  <input type="text" class="hs-cell-input" x-model="row.daterange"
+                         @focus="openDateRange(rIdx, 6)"
+                         @blur="setTimeout(() => closeDateRange(), 200)"
+                         placeholder="Start / End"
+                         style="cursor:pointer;">
+                  <div class="hs-daterange" x-show="dateRangeTarget && dateRangeTarget.row === rIdx && dateRangeTarget.col === 6"
+                       @click.outside="closeDateRange()" x-cloak>
+                    <div class="hs-daterange-inputs">
+                      <input type="date" x-model="dateRangeStart" placeholder="Start">
+                      <input type="date" x-model="dateRangeEnd" placeholder="End">
+                    </div>
+                    <button class="hs-daterange-apply" @click="drApply()" type="button">Apply</button>
                   </div>
                 </td>
               </tr>
@@ -827,6 +889,7 @@ function demoApp() {
         status: 'Active',
         tier: 'Free',
         date: new Date().toISOString().slice(0, 10),
+        daterange: '',
         tasks: [{ id: 't-new-' + n, label: 'New task', done: false }],
       });
       this.setLastAction('Row added');
@@ -845,11 +908,11 @@ function demoApp() {
       var today = new Date();
       var d = function (offset) { var dt = new Date(today); dt.setDate(dt.getDate() + offset); return dt.toISOString().slice(0, 10); };
       this.rows = [
-        { id: 'r1', name: 'Alice Johnson', email: 'alice@example.com', status: 'Active', tier: 'Enterprise', date: d(-2), tasks: [{ id: 't1', label: 'Setup CI/CD', done: true }, { id: 't2', label: 'Write docs', done: false }] },
-        { id: 'r2', name: 'Bob Smith', email: 'bob@example.com', status: 'Paused', tier: 'Premium', date: d(0), tasks: [{ id: 't3', label: 'Review PR', done: false }] },
-        { id: 'r3', name: 'Carol Davis', email: 'carol@example.com', status: 'Active', tier: 'Free', date: d(1), tasks: [{ id: 't4', label: 'Fix bug #42', done: true }, { id: 't5', label: 'Deploy v2', done: false }] },
-        { id: 'r4', name: 'Dave Wilson', email: 'dave@example.com', status: 'Archived', tier: 'Enterprise', date: d(3), tasks: [{ id: 't6', label: 'Audit logs', done: true }] },
-        { id: 'r5', name: 'Eve Martin', email: 'eve@example.com', status: 'Active', tier: 'Premium', date: d(5), tasks: [{ id: 't7', label: 'Update deps', done: false }, { id: 't8', label: 'Write tests', done: false }] },
+        { id: 'r1', name: 'Alice Johnson', email: 'alice@example.com', status: 'Active', tier: 'Enterprise', date: d(-2), daterange: d(-5) + ' / ' + d(-3), tasks: [{ id: 't1', label: 'Setup CI/CD', done: true }, { id: 't2', label: 'Write docs', done: false }] },
+        { id: 'r2', name: 'Bob Smith', email: 'bob@example.com', status: 'Paused', tier: 'Premium', date: d(0), daterange: d(0) + ' / ' + d(2), tasks: [{ id: 't3', label: 'Review PR', done: false }] },
+        { id: 'r3', name: 'Carol Davis', email: 'carol@example.com', status: 'Active', tier: 'Free', date: d(1), daterange: d(1) + ' / ' + d(4), tasks: [{ id: 't4', label: 'Fix bug #42', done: true }, { id: 't5', label: 'Deploy v2', done: false }] },
+        { id: 'r4', name: 'Dave Wilson', email: 'dave@example.com', status: 'Archived', tier: 'Enterprise', date: d(3), daterange: '', tasks: [{ id: 't6', label: 'Audit logs', done: true }] },
+        { id: 'r5', name: 'Eve Martin', email: 'eve@example.com', status: 'Active', tier: 'Premium', date: d(5), daterange: d(5) + ' / ' + d(7), tasks: [{ id: 't7', label: 'Update deps', done: false }, { id: 't8', label: 'Write tests', done: false }] },
       ];
       this.setLastAction('Grid reset');
     },
@@ -920,7 +983,7 @@ function demoApp() {
 
     onClearCell(event) {
       const { row, col } = event.detail;
-      const field = ['name','email','status','tier','tasks'][col];
+      const field = ['name','email','status','tier','tasks','date','daterange'][col];
       if (field && this.rows[row]) {
         if (field === 'status') this.rows[row][field] = 'Active';
         else if (field === 'tier') this.rows[row][field] = 'Free';

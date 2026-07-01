@@ -135,7 +135,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await grid.navigateToCell(0, 0);
     await page.keyboard.press('End');
     await page.waitForTimeout(100);
-    const focused = await page.locator('#main-grid [data-row="0"][data-col="4"].hs-focused');
+    const focused = await page.locator('#main-grid [data-row="0"][data-col="6"].hs-focused');
     await expect(focused).toHaveCount(1);
   });
 

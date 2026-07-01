@@ -64,6 +64,16 @@ document.addEventListener('alpine:init', () => {
     isSelecting: false,
     selectionSummary: null,
 
+    // --- Date Picker State ---
+    datePickerTarget: null,   // { row, col } or null
+    datePickerYear: null,
+    datePickerMonth: null,
+
+    // --- Date Range State ---
+    dateRangeTarget: null,    // { row, col } or null
+    dateRangeStart: null,
+    dateRangeEnd: null,
+
     // --- Prompt Configuration ---
     promptOnClear: config.promptOnClear !== undefined ? config.promptOnClear : false,
     promptOnClearRow: config.promptOnClearRow !== undefined ? config.promptOnClearRow : true,
@@ -823,6 +833,122 @@ document.addEventListener('alpine:init', () => {
 
     isSortedDesc(colIndex) {
       return this.sortCol === colIndex && !this.sortAsc;
+    },
+
+    // --- Date Picker ---
+    openDatePicker(row, col) {
+      this.datePickerTarget = { row: row, col: col };
+      var d = this._getDateValue(row, col) || new Date();
+      this.datePickerYear = d.getFullYear();
+      this.datePickerMonth = d.getMonth();
+    },
+
+    closeDatePicker() {
+      this.datePickerTarget = null;
+    },
+
+    dpPrevMonth() {
+      if (this.datePickerMonth === 0) { this.datePickerYear--; this.datePickerMonth = 11; }
+      else { this.datePickerMonth--; }
+    },
+
+    dpNextMonth() {
+      if (this.datePickerMonth === 11) { this.datePickerYear++; this.datePickerMonth = 0; }
+      else { this.datePickerMonth++; }
+    },
+
+    dpSelectDate(day) {
+      if (!this.datePickerTarget) return;
+      var d = new Date(this.datePickerYear, this.datePickerMonth, day);
+      var val = d.getFullYear() + '-' + this._pad(d.getMonth() + 1) + '-' + this._pad(day);
+      var row = this.datePickerTarget.row, col = this.datePickerTarget.col;
+      this.setCellValue(row, col, val);
+      this.closeDatePicker();
+    },
+
+    dpDaysInMonth(year, month) {
+      return new Date(year, month + 1, 0).getDate();
+    },
+
+    dpFirstDay(year, month) {
+      return new Date(year, month, 1).getDay();
+    },
+
+    dpGrid() {
+      if (this.datePickerYear == null) return [];
+      var y = this.datePickerYear, m = this.datePickerMonth;
+      var days = this.dpDaysInMonth(y, m);
+      var start = this.dpFirstDay(y, m);
+      var today = new Date();
+      var grid = [];
+      var day = 1;
+      for (var w = 0; w < 6; w++) {
+        var week = [];
+        for (var d = 0; d < 7; d++) {
+          if ((w === 0 && d < start) || day > days) {
+            week.push(null);
+          } else {
+            var isToday = y === today.getFullYear() && m === today.getMonth() && day === today.getDate();
+            week.push({ day: day, isToday: isToday });
+            day++;
+          }
+        }
+        grid.push(week);
+        if (day > days) break;
+      }
+      return grid;
+    },
+
+    dpMonthLabel() {
+      if (this.datePickerYear == null) return '';
+      var d = new Date(this.datePickerYear, this.datePickerMonth, 1);
+      return d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    },
+
+    isDateCell(row, col) {
+      var c = this.columns[col];
+      return c && (c.type === 'date' || c.type === 'daterange');
+    },
+
+    // --- Date Range ---
+    openDateRange(row, col) {
+      this.dateRangeTarget = { row: row, col: col };
+      var val = this._getDateValue(row, col);
+      if (val) {
+        var parts = val.split('/');
+        this.dateRangeStart = parts[0] || '';
+        this.dateRangeEnd = parts[1] || '';
+      } else {
+        this.dateRangeStart = '';
+        this.dateRangeEnd = '';
+      }
+    },
+
+    closeDateRange() {
+      this.dateRangeTarget = null;
+    },
+
+    drApply() {
+      if (!this.dateRangeTarget) return;
+      var row = this.dateRangeTarget.row, col = this.dateRangeTarget.col;
+      if (this.dateRangeStart && this.dateRangeEnd) {
+        this.setCellValue(row, col, this.dateRangeStart + ' / ' + this.dateRangeEnd);
+      }
+      this.closeDateRange();
+    },
+
+    // --- Internal Helpers ---
+    _getDateValue(row, col) {
+      var input = this.$el.querySelector('[data-row="' + row + '"][data-col="' + col + '"] .hs-cell-input');
+      if (input && input.value) {
+        var d = new Date(input.value);
+        return isNaN(d.getTime()) ? null : d;
+      }
+      return null;
+    },
+
+    _pad(n) {
+      return n < 10 ? '0' + n : '' + n;
     },
 
     // --- Internal ---
