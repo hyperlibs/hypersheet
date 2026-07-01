@@ -49,6 +49,11 @@ document.addEventListener('alpine:init', () => {
     sortCol: config.sortCol || null,
     sortAsc: config.sortAsc !== undefined ? config.sortAsc : true,
 
+    // --- Column Definitions ---
+    // Array of { field, title, type, options, provider }
+    // When provider is set, options are resolved dynamically
+    columns: config.columns || [],
+
     // --- Cell Formatting ---
     // Stored as "row:col" -> { bold, underline, highlight }
     cellFormats: {},
@@ -57,12 +62,35 @@ document.addEventListener('alpine:init', () => {
     promptOnClear: config.promptOnClear !== undefined ? config.promptOnClear : false,
     promptOnClearRow: config.promptOnClearRow !== undefined ? config.promptOnClearRow : true,
 
+    // --- Provider System ---
+    _registry: null,
+    _columnProviders: {},
+
     // --- Init ---
     init() {
-      // Track focused cell as a reactive string key for template bindings
-      // (Alpine methods are NOT reactive — direct property access is required)
       this.$watch('activeRow', () => this._updateFocusedKey());
       this.$watch('activeCol', () => this._updateFocusedKey());
+
+      // Wire up provider registry if available
+      if (typeof HypersheetProviders !== 'undefined') {
+        this._registry = HypersheetProviders.registry;
+        if (config.providers) {
+          Object.keys(config.providers).forEach(function (name) {
+            this._registry.define(name, config.providers[name]);
+          }.bind(this));
+        }
+        if (config.globalProviders) {
+          var reg = this._registry;
+          Object.keys(config.globalProviders).forEach(function (name) {
+            reg.define(name, config.globalProviders[name]);
+          });
+        }
+        // Init column providers
+        this.columns.forEach(function (col, i) {
+          this._columnProviders[i] = null;
+          if (col.provider) this._loadColumnOptions(i);
+        }.bind(this));
+      }
 
       if (this.sortable && window.Sortable) {
         const tbody = this.$el.querySelector('tbody');
@@ -80,6 +108,53 @@ document.addEventListener('alpine:init', () => {
           });
         }
       }
+    },
+
+    // --- Provider Integration ---
+    getColumn(col) {
+      return this.columns[col] || null;
+    },
+
+    getColumnOptions(col) {
+      var colDef = this.columns[col];
+      if (!colDef) return [];
+      // If provider was resolved, return cached options
+      if (colDef.provider && this._columnProviders[col]) {
+        var provider = this._columnProviders[col];
+        if (provider._resolved) return provider._resolved;
+        return colDef.options || [];
+      }
+      return colDef.options || [];
+    },
+
+    _loadColumnOptions(col) {
+      var colDef = this.columns[col];
+      if (!colDef || !colDef.provider || !this._registry) return;
+      var provider = this._registry.resolve(colDef);
+      this._columnProviders[col] = provider;
+      provider.fetch().then(function (result) {
+        if (result.success) {
+          provider._resolved = result.items;
+          // Trigger Alpine reactivity by reassigning
+          this.columns = this.columns.slice();
+        }
+      }.bind(this)).catch(function () {});
+    },
+
+    reloadProvider(col) {
+      if (this._columnProviders[col]) {
+        this._columnProviders[col]._cache = null;
+        this._columnProviders[col]._resolved = null;
+        this._loadColumnOptions(col);
+      }
+    },
+
+    reloadAllProviders() {
+      this.columns.forEach(function (col, i) { this.reloadProvider(i); }.bind(this));
+    },
+
+    getColumnProvider(col) {
+      return this._columnProviders[col] || null;
     },
 
     // --- Reactive cell focus check (for Alpine templates) ---

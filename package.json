@@ -24,7 +24,8 @@
   "scripts": {
     "build:css": "cp src/css/hypersheet.css dist/hypersheet.css",
     "build:js": "cp src/js/hypersheet.js dist/hypersheet.js",
-    "build": "npm run build:css && npm run build:js",
+    "build:providers": "cp src/js/providers.js dist/providers.js",
+    "build": "npm run build:css && npm run build:js && npm run build:providers",
     "prepublishOnly": "bun run build",
     "test": "bunx playwright test tests/playwright/keyboard-shortcuts.spec.js --config=tests/playwright/playwright.config.js"
   },

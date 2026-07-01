@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hypersheet Demo</title>
+  <script defer src="../src/js/providers.js"></script>
   <script defer src="../src/js/hypersheet.js"></script>
   <script defer src="https://unpkg.com/alpinejs@3/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -65,6 +66,7 @@
   <div class="tab-bar">
     <div class="tab" :class="{ active: tab === 'grid' }" @click="tab = 'grid'">Main Grid</div>
     <div class="tab" :class="{ active: tab === 'shortcuts' }" @click="tab = 'shortcuts'">Shortcuts</div>
+    <div class="tab" :class="{ active: tab === 'providers' }" @click="tab = 'providers'">Providers</div>
   </div>
 
   <!-- === MAIN GRID TAB === -->
@@ -229,6 +231,126 @@
     </div>
   </div>
 
+  <!-- === PROVIDERS TAB === -->
+  <div class="tab-content" :class="{ active: tab === 'providers' }">
+    <div class="section-title">
+      <span>🔌 Provider-Driven Grid</span>
+      <span class="badge badge-core">config · static · memory</span>
+    </div>
+    <p style="margin-bottom:1rem;color:#6b7280;font-size:0.875rem;">
+      Every column declares its data provider. The grid resolves options dynamically.
+      Swap a provider type — config, API, database, or static — without changing the grid.
+    </p>
+    <div class="grid-wrapper">
+      <div id="provider-grid"
+           x-data="hypersheet({
+             rows: providerRows.length,
+             cols: 4,
+             columns: [
+               { field: 'name', title: 'Name', type: 'text' },
+               { field: 'role', title: 'Role', type: 'dropdown',
+                 provider: { type: 'static', items: [
+                   { value: 'admin', label: 'Administrator' },
+                   { value: 'editor', label: 'Editor' },
+                   { value: 'viewer', label: 'Viewer' }
+                 ]}
+               },
+               { field: 'region', title: 'Region', type: 'dropdown',
+                 provider: { type: 'memory', items: [
+                   { value: 'na', label: 'North America' },
+                   { value: 'eu', label: 'Europe' },
+                   { value: 'apac', label: 'Asia Pacific' }
+                 ]}
+               },
+               { field: 'status', title: 'Status', type: 'chip',
+                 provider: { type: 'static', items: [
+                   { value: 'active', label: 'Active' },
+                   { value: 'pending', label: 'Pending' },
+                   { value: 'inactive', label: 'Inactive' }
+                 ]}
+               }
+             ]
+           })">
+        <table class="hg-grid hg-grid-provider">
+          <thead>
+            <tr class="hg-header">
+              <th class="hg-cell" style="width:2.5rem;min-width:2rem;"></th>
+              <th class="hg-cell">Name</th>
+              <th class="hg-cell">Role <span style="font-size:0.7rem;color:#9ca3af;">(static)</span></th>
+              <th class="hg-cell">Region <span style="font-size:0.7rem;color:#9ca3af;">(memory)</span></th>
+              <th class="hg-cell">Status <span style="font-size:0.7rem;color:#9ca3af;">(static)</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(row, rIdx) in providerRows" :key="row.id">
+              <tr class="hg-row">
+                <td class="hg-cell hg-drag-handle">⋮⋮</td>
+                <td class="hg-cell" :class="focusedKey === rIdx + ':0' ? 'hg-focused' : ''">
+                  <input class="hg-cell-input" type="text" x-model="providerRows[rIdx].name"
+                         @focus="focusCell(rIdx, 0, false)"
+                         @blur="$dispatch('cell-focus', {row:rIdx, col:0})"
+                         name="name">
+                </td>
+                <td class="hg-cell hg-cell-dropdown" :class="focusedKey === rIdx + ':1' ? 'hg-focused' : ''"
+                    x-data="{ open: false }">
+                  <div @click="open = !open" class="hg-dropdown-trigger">
+                    <span x-text="providerRows[rIdx].role ? (getColumnOptions(1).find(o => o.value === providerRows[rIdx].role)?.label || providerRows[rIdx].role) : 'Select...'"></span>
+                    <span class="hg-dropdown-arrow">▼</span>
+                  </div>
+                  <div class="hg-dropdown-menu" x-show="open" @click.away="open = false">
+                    <template x-for="opt in getColumnOptions(1)" :key="opt.value">
+                      <div class="hg-dropdown-item" @click="providerRows[rIdx].role = opt.value; open = false" x-text="opt.label"></div>
+                    </template>
+                  </div>
+                </td>
+                <td class="hg-cell hg-cell-dropdown" :class="focusedKey === rIdx + ':2' ? 'hg-focused' : ''"
+                    x-data="{ open: false }">
+                  <div @click="open = !open" class="hg-dropdown-trigger">
+                    <span x-text="providerRows[rIdx].region ? (getColumnOptions(2).find(o => o.value === providerRows[rIdx].region)?.label || providerRows[rIdx].region) : 'Select...'"></span>
+                    <span class="hg-dropdown-arrow">▼</span>
+                  </div>
+                  <div class="hg-dropdown-menu" x-show="open" @click.away="open = false">
+                    <template x-for="opt in getColumnOptions(2)" :key="opt.value">
+                      <div class="hg-dropdown-item" @click="providerRows[rIdx].region = opt.value; open = false" x-text="opt.label"></div>
+                    </template>
+                  </div>
+                </td>
+                <td class="hg-cell" :class="focusedKey === rIdx + ':3' ? 'hg-focused' : ''">
+                  <span class="hg-chip"
+                        :class="{
+                          'hg-chip-active': providerRows[rIdx].status === 'active',
+                          'hg-chip-paused': providerRows[rIdx].status === 'pending',
+                          'hg-chip-archived': providerRows[rIdx].status === 'inactive'
+                        }"
+                        x-text="getColumnOptions(3).find(o => o.value === providerRows[rIdx].status)?.label || providerRows[rIdx].status">
+                  </span>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:2rem;"><span>📋 Provider Config</span></div>
+    <pre style="background:#1f2937;color:#e5e7eb;padding:1rem;border-radius:6px;font-size:0.8rem;overflow-x:auto;"
+><span style="color:#93c5fd;">// Column-level provider (static)</span>
+{ field: 'role', type: 'dropdown',
+  provider: { type: 'static', items: [
+    { value: 'admin', label: 'Administrator' },
+    { value: 'editor', label: 'Editor' }
+  ]}
+}
+
+<span style="color:#93c5fd;">// Swap to config file — same grid, different source</span>
+{ field: 'role', type: 'dropdown',
+  provider: { type: 'config', source: '/data/roles.json' } }
+
+<span style="color:#93c5fd;">// Swap to database — one-line change</span>
+{ field: 'role', type: 'dropdown',
+  provider: { type: 'database', table: 'roles', label: 'name', value: 'id' } }</pre>
+  </div>
+
   <!-- Status Bar -->
   <div class="status-bar">
     <span>📍 Cell: (<span x-text="gridActiveRow + 1"></span>, <span x-text="gridActiveCol + 1"></span>)</span>
@@ -251,6 +373,8 @@ function demoApp() {
     gridEditMode: false,
     lastAction: '',
     toast: { visible: false, message: '', timer: null },
+    providerRows: [],
+    providerStatus: {},
 
     shortcuts: [
       { keys: '←&nbsp;→&nbsp;↑&nbsp;↓', action: 'Navigate between cells' },
@@ -274,6 +398,7 @@ function demoApp() {
 
     init() {
       this.resetGrid();
+      this.resetProviderGrid();
 
       // Track grid state from the hypersheet component
       this.$watch('tab', () => {
@@ -340,6 +465,21 @@ function demoApp() {
         { id: 'r5', name: 'Eve Martin', email: 'eve@example.com', status: 'Active', tier: 'Premium', tasks: [{ id: 't7', label: 'Update deps', done: false }, { id: 't8', label: 'Write tests', done: false }] },
       ];
       this.setLastAction('Grid reset');
+    },
+
+    resetProviderGrid() {
+      this.providerRows = [
+        { id: 'p1', name: 'Project Alpha', role: 'admin', region: 'na', status: 'active' },
+        { id: 'p2', name: 'Project Beta', role: 'editor', region: 'eu', status: 'pending' },
+        { id: 'p3', name: 'Project Gamma', role: 'viewer', region: 'apac', status: 'active' },
+      ];
+      this.providerStatus = {
+        StaticProvider: '✓ loaded',
+        MemoryProvider: '✓ loaded',
+        ConfigProvider: '✓ available',
+        ApiProvider: '✓ available',
+        DatabaseProvider: '✓ available',
+      };
     },
 
       // ---- Event Handlers from hypersheet ----
