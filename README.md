@@ -70,8 +70,18 @@ Hypersheet is a lightweight, hypermedia-driven data grid built on [Alpine.js](ht
 
 ## Documentation
 
-- [Hypersheet CSS Reference](./docs/css.md)
-- [Hypersheet JS API](./docs/js.md)
+### Beginner
+- [Getting Started](./docs/getting-started.md) — setup, init, config-driven, provider-driven, readonly, editable
+- [CSS Reference](./docs/css.md) — all utility classes
+
+### Advanced
+- [Advanced Guide](./docs/advanced.md) — role-based editing, decorations, Yjs conflict resolution, provider architecture
+- [JS API Reference](./docs/js.md) — Alpine plugin methods
+
+### Platform Guides
+- [Platform Integration](./docs/platforms.md) — WordPress, Laravel, Django, FastAPI, Flask, Next.js, Hugo + 20+ more
+
+### Backend Packages
 - [PHP Backend](./backends/php/README.md)
 - [Go Backend](./backends/go/README.md)
 - [Python Backend](./backends/python/README.md)
