@@ -1,5 +1,5 @@
 """
-HyperGrid Python (FastAPI + Jinja3) Example
+Hypersheet Python (FastAPI + Jinja3) Example
 Run: uvicorn app:app --reload --port 8000
 """
 
@@ -12,9 +12,9 @@ from fastapi import FastAPI, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from jinja2 import Environment, FileSystemLoader
 
-from hypergrid.engine import HyperGridJinjaEngine
+from hypersheet.engine import HypersheetJinjaEngine
 
-app = FastAPI(title="HyperGrid Python Example")
+app = FastAPI(title="Hypersheet Python Example")
 
 # --- Casbin Setup ---
 MODEL_CONF = """
@@ -46,7 +46,7 @@ Path("casbin_model.conf").write_text(MODEL_CONF)
 Path("casbin_policy.csv").write_text(POLICY_CSV)
 
 enforcer = casbin.Enforcer("casbin_model.conf", "casbin_policy.csv")
-grid_engine = HyperGridJinjaEngine(enforcer)
+grid_engine = HypersheetJinjaEngine(enforcer)
 
 # --- Jinja3 Setup ---
 template_dir = Path(__file__).parent / "templates"
@@ -59,10 +59,10 @@ template_dir.mkdir(exist_ok=True)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HyperGrid Python Example</title>
+    <title>Hypersheet Python Example</title>
     <script src="https://unpkg.com/alpinejs@3/dist/cdn.min.js" defer></script>
-    <script src="https://unpkg.com/hypergrid@0.1/dist/hypergrid.js" defer></script>
-    <link rel="stylesheet" href="https://unpkg.com/hypergrid@0.1/dist/hypergrid.css">
+    <script src="https://unpkg.com/hypersheet@0.1/dist/hypersheet.js" defer></script>
+    <link rel="stylesheet" href="https://unpkg.com/hypersheet@0.1/dist/hypersheet.css">
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 960px; margin: 0 auto; padding: 2rem; }
         h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
@@ -72,7 +72,7 @@ template_dir.mkdir(exist_ok=True)
     </style>
 </head>
 <body>
-    <h1>HyperGrid — Python Example</h1>
+    <h1>Hypersheet — Python Example</h1>
     <div class="user-switch">
         <span>User:</span>
         <a href="/?user=alice" class="{{ 'active' if user_id == 'alice' else '' }}">Alice</a>
@@ -91,7 +91,7 @@ template_dir.mkdir(exist_ok=True)
 """)
 
 env = Environment(loader=FileSystemLoader(str(template_dir)), autoescape=True)
-env.globals["hypergrid_cell"] = grid_engine.render_cell
+env.globals["hypersheet_cell"] = grid_engine.render_cell
 
 # --- Sample Data ---
 COLUMNS = [

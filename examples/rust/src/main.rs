@@ -1,4 +1,4 @@
-// HyperGrid Rust Example
+// Hypersheet Rust Example
 // Run: cargo run
 // Requires: axum, tokio, tower-http (serve static)
 
@@ -10,7 +10,7 @@ use axum::{
     Router,
 };
 use casbin::prelude::*;
-use hypergrid::{CellType, ChecklistItem, Column, Grid, Row};
+use hypersheet::{CellType, ChecklistItem, Column, Grid, Row};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -116,10 +116,10 @@ p, bob, column:tier, write
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HyperGrid Rust Example</title>
+    <title>Hypersheet Rust Example</title>
     <script src="https://unpkg.com/alpinejs@3/dist/cdn.min.js" defer></script>
-    <script src="https://unpkg.com/hypergrid@0.1/dist/hypergrid.js" defer></script>
-    <link rel="stylesheet" href="https://unpkg.com/hypergrid@0.1/dist/hypergrid.css">
+    <script src="https://unpkg.com/hypersheet@0.1/dist/hypersheet.js" defer></script>
+    <link rel="stylesheet" href="https://unpkg.com/hypersheet@0.1/dist/hypersheet.css">
     <style>
         body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 960px; margin: 0 auto; padding: 2rem; }}
         h1 {{ font-size: 1.5rem; margin-bottom: 0.5rem; }}
@@ -129,7 +129,7 @@ p, bob, column:tier, write
     </style>
 </head>
 <body>
-    <h1>HyperGrid — Rust Example</h1>
+    <h1>Hypersheet — Rust Example</h1>
     <div class="user-switch">
         <span>User:</span>
         <a href="/?user=alice" class="{}">Alice</a>
@@ -169,7 +169,7 @@ p, bob, column:tier, write
         }));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
-    println!("HyperGrid Rust example running at http://localhost:8000");
+    println!("Hypersheet Rust example running at http://localhost:8000");
     axum::serve(listener, app).await.unwrap();
 }
 

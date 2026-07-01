@@ -1,6 +1,6 @@
 <?php
 
-namespace HyperGrid;
+namespace Hypersheet;
 
 use Psr\Log\LogLevel;
 
@@ -22,7 +22,7 @@ class CasbinLogger
     public function __construct(array $config = [])
     {
         $this->enabled = $config['enabled'] ?? false;
-        $this->logFile = $config['log_file'] ?? sys_get_temp_dir() . '/hypergrid_casbin.log';
+        $this->logFile = $config['log_file'] ?? sys_get_temp_dir() . '/Hypersheet_casbin.log';
         $this->minLevel = $config['min_level'] ?? 'info';
         $this->handlers = $config['handlers'] ?? ['file'];
 
@@ -47,7 +47,7 @@ class CasbinLogger
 
         $timestamp = date('Y-m-d H:i:s.v');
         $contextStr = !empty($context) ? ' ' . json_encode($context, JSON_UNESCAPED_UNICODE) : '';
-        $entry = "[{$timestamp}] [hypergrid.casbin.{$level}] {$message}{$contextStr}" . PHP_EOL;
+        $entry = "[{$timestamp}] [Hypersheet.casbin.{$level}] {$message}{$contextStr}" . PHP_EOL;
 
         foreach ($this->handlers as $handler) {
             match ($handler) {

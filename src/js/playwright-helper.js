@@ -1,20 +1,20 @@
 /**
- * HyperGrid Playwright Error Capturing & Test Helpers
+ * Hypersheet Playwright Error Capturing & Test Helpers
  *
  * OPTIONAL module — import into Playwright tests only when needed.
  * Provides configurable error capturing, screenshot-on-failure,
  * htmx request waiting, keyboard navigation, and cell assertions.
  *
  * Usage:
- *   const { HyperGridTest } = require('../src/js/playwright-helper.js');
- *   const grid = new HyperGridTest(page, { captureErrors: true });
+ *   const { HypersheetTest } = require('../src/js/playwright-helper.js');
+ *   const grid = new HypersheetTest(page, { captureErrors: true });
  *   await grid.waitForGrid();
  *   await grid.assertCellValue(0, 0, 'Alice');
  */
 
 const DEFAULTS = {
   /** CSS selector for the grid container */
-  gridSelector: '[x-data*="hypergrid"]',
+  gridSelector: '[x-data*="hypersheet"]',
   /** Capture console.error, page errors, and failed API responses */
   captureErrors: true,
   /** Timeout in ms for grid render wait */
@@ -29,7 +29,7 @@ const DEFAULTS = {
   debug: false,
 };
 
-class HyperGridTest {
+class HypersheetTest {
   constructor(page, options = {}) {
     this.opts = { ...DEFAULTS, ...options };
     this.page = page;
@@ -50,7 +50,7 @@ class HyperGridTest {
           location: msg.location(),
         });
         if (this.opts.debug) {
-          console.log(`[HyperGridTest] Console error: ${msg.text()}`);
+          console.log(`[HypersheetTest] Console error: ${msg.text()}`);
         }
       }
     });
@@ -214,9 +214,9 @@ class HyperGridTest {
       await this.screenshot('error-state');
     }
     if (log) {
-      throw new Error(`HyperGrid errors detected:\n${log}`);
+      throw new Error(`Hypersheet errors detected:\n${log}`);
     }
   }
 }
 
-module.exports = { HyperGridTest };
+module.exports = { HypersheetTest };

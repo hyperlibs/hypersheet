@@ -1,12 +1,12 @@
 <?php
 /**
- * HyperGrid PHP Example
+ * Hypersheet PHP Example
  * Run: php -S localhost:8000 index.php
  */
 
 require_once __DIR__ . '/../../backends/php/vendor/autoload.php';
 
-use HyperGrid\Grid;
+use Hypersheet\Grid;
 use Casbin\Enforcer;
 
 // --- Initialize Casbin ---
@@ -95,10 +95,10 @@ $gridHtml = $grid->render();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HyperGrid PHP Example</title>
+    <title>Hypersheet PHP Example</title>
     <script src="https://unpkg.com/alpinejs@3/dist/cdn.min.js" defer></script>
-    <script src="https://unpkg.com/hypergrid@0.1/dist/hypergrid.js" defer></script>
-    <link rel="stylesheet" href="https://unpkg.com/hypergrid@0.1/dist/hypergrid.css">
+    <script src="https://unpkg.com/hypersheet@0.1/dist/hypersheet.js" defer></script>
+    <link rel="stylesheet" href="https://unpkg.com/hypersheet@0.1/dist/hypersheet.css">
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 960px; margin: 0 auto; padding: 2rem; }
         h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
@@ -108,7 +108,7 @@ $gridHtml = $grid->render();
     </style>
 </head>
 <body>
-    <h1>HyperGrid — PHP Example</h1>
+    <h1>Hypersheet — PHP Example</h1>
     <div class="user-switch">
         <span>User:</span>
         <a href="?user=alice" class="<?= $userId === 'alice' ? 'active' : '' ?>">Alice</a>

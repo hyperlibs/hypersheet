@@ -1,5 +1,5 @@
 """
-HyperGrid Jinja3 Engine
+Hypersheet Jinja3 Engine
 
 Jinja3-specific implementation using:
   - @pass_context (not legacy @contextfilter)
@@ -12,10 +12,10 @@ from markupsafe import Markup, escape
 from jinja2 import pass_context
 
 
-class HyperGridJinjaEngine:
-    """HyperGrid rendering engine for Jinja3 environments.
+class HypersheetJinjaEngine:
+    """Hypersheet rendering engine for Jinja3 environments.
 
-    Register via env.globals["hypergrid_cell"] = engine.render_cell
+    Register via env.globals["Hypersheet_cell"] = engine.render_cell
 
     Casbin authorization is optional. If no enforcer is provided,
     all cells are rendered as editable.
@@ -43,7 +43,7 @@ class HyperGridJinjaEngine:
         """Render a single grid cell with Casbin authorization.
 
         Called from Jinja3 templates as:
-            {{ hypergrid_cell(row.id, "name", row.name, r_idx, 0, cell_type="text") }}
+            {{ Hypersheet_cell(row.id, "name", row.name, r_idx, 0, cell_type="text") }}
         """
         if options is None:
             options = []
@@ -166,14 +166,14 @@ class HyperGridJinjaEngine:
         return Markup(html)
 
     def render_grid(self, context, columns, rows):
-        """Render a complete grid table. Callable from Jinja3 as hypergrid_render_grid.
+        """Render a complete grid table. Callable from Jinja3 as Hypersheet_render_grid.
 
         Args:
             context: Jinja3 context (injected via @pass_context)
             columns: List of dicts with keys: name, label, type, options
             rows: List of dicts keyed by column name
         """
-        grid_html = '<div x-data="hypergrid({rows: '
+        grid_html = '<div x-data="Hypersheet({rows: '
         grid_html += str(len(rows))
         grid_html += ', cols: '
         grid_html += str(len(columns))

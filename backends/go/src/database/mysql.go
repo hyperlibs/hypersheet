@@ -23,7 +23,7 @@ func (d *MysqlDriver) Connect(config map[string]string) error {
 	}
 	dbname := config["database"]
 	if dbname == "" {
-		dbname = "hypergrid"
+		dbname = "Hypersheet"
 	}
 	user := config["username"]
 	if user == "" {

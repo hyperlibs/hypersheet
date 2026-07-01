@@ -1,9 +1,9 @@
 """
-HyperGrid Casbin Logger — optional authorization logging.
+Hypersheet Casbin Logger — optional authorization logging.
 
 Usage:
     logger = CasbinLogger(enabled=True, min_level="info")
-    grid_engine = HyperGridJinjaEngine(enforcer, logger=logger)
+    grid_engine = HypersheetJinjaEngine(enforcer, logger=logger)
 """
 
 import json
@@ -40,7 +40,7 @@ class CasbinLogger:
         self.enabled = enabled
         self.min_level = self.LEVELS.get(min_level, 1)
         self.log_file = log_file or str(
-            Path(Path.home(), ".hypergrid", "casbin.log")
+            Path(Path.home(), ".Hypersheet", "casbin.log")
         )
         self.handlers = handlers or ["file"]
 
@@ -49,7 +49,7 @@ class CasbinLogger:
             log_dir.mkdir(parents=True, exist_ok=True)
 
         # Python stdlib logger as secondary output
-        self._py_logger = logging.getLogger("hypergrid.casbin")
+        self._py_logger = logging.getLogger("Hypersheet.casbin")
         self._py_logger.setLevel(logging.DEBUG if enabled else logging.WARNING)
 
     def _should_log(self, level: str) -> bool:
@@ -63,7 +63,7 @@ class CasbinLogger:
         ctx_str = ""
         if context:
             ctx_str = " " + json.dumps(context, default=str)
-        entry = f"[{timestamp}] [hypergrid.casbin.{level}] {message}{ctx_str}\n"
+        entry = f"[{timestamp}] [Hypersheet.casbin.{level}] {message}{ctx_str}\n"
 
         for handler in self.handlers:
             if handler == "file":

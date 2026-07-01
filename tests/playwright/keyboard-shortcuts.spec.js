@@ -1,5 +1,5 @@
 /**
- * HyperGrid E2E Keyboard Shortcut Tests
+ * Hypersheet E2E Keyboard Shortcut Tests
  *
  * Validates all keyboard navigation, editing, and formatting shortcuts.
  * Run against the static demo: npx serve demo/
@@ -9,15 +9,15 @@
  */
 
 const { test, expect } = require('@playwright/test');
-const { HyperGridTest } = require('../../src/js/playwright-helper.js');
+const { HypersheetTest } = require('../../src/js/playwright-helper.js');
 
 const DEFAULT_URL = process.env.GRID_URL || 'http://localhost:8769';
 
-test.describe('HyperGrid Keyboard Navigation', () => {
+test.describe('Hypersheet Keyboard Navigation', () => {
   let grid;
 
   test.beforeEach(async ({ page }) => {
-    grid = new HyperGridTest(page, {
+    grid = new HypersheetTest(page, {
       gridSelector: '#main-grid',
       captureErrors: true,
     });
@@ -152,11 +152,11 @@ test.describe('HyperGrid Keyboard Navigation', () => {
   });
 });
 
-test.describe('HyperGrid Editing Shortcuts', () => {
+test.describe('Hypersheet Editing Shortcuts', () => {
   let grid;
 
   test.beforeEach(async ({ page }) => {
-    grid = new HyperGridTest(page, {
+    grid = new HypersheetTest(page, {
       gridSelector: '#main-grid',
       captureErrors: true,
     });
@@ -231,11 +231,11 @@ test.describe('HyperGrid Editing Shortcuts', () => {
   });
 });
 
-test.describe('HyperGrid Cell Formatting Shortcuts', () => {
+test.describe('Hypersheet Cell Formatting Shortcuts', () => {
   let grid;
 
   test.beforeEach(async ({ page }) => {
-    grid = new HyperGridTest(page, {
+    grid = new HypersheetTest(page, {
       gridSelector: '#main-grid',
       captureErrors: true,
     });
@@ -305,11 +305,11 @@ test.describe('HyperGrid Cell Formatting Shortcuts', () => {
   });
 });
 
-test.describe('HyperGrid Multi-Cell + Edge Cases', () => {
+test.describe('Hypersheet Multi-Cell + Edge Cases', () => {
   let grid;
 
   test.beforeEach(async ({ page }) => {
-    grid = new HyperGridTest(page, {
+    grid = new HypersheetTest(page, {
       gridSelector: '#main-grid',
       captureErrors: true,
     });

@@ -1,5 +1,5 @@
 /**
- * HyperGrid - Alpine.js Plugin
+ * Hypersheet - Alpine.js Plugin
  * Spreadsheet-like keyboard navigation, inline editing, cell formatting.
  * Requires Alpine.js 3.x and SortableJS (optional, for drag-reorder).
  *
@@ -21,7 +21,7 @@
  *   Space               Toggle checkbox in focused cell
  *
  * Usage:
- *   <div x-data="hypergrid({ rows: 10, cols: 5, sortable: true })"
+ *   <div x-data="hypersheet({ rows: 10, cols: 5, sortable: true })"
  *        @keydown.window="handleKey($event)">
  *     <table class="hg-grid">...</table>
  *   </div>
@@ -37,7 +37,7 @@
  */
 
 document.addEventListener('alpine:init', () => {
-  Alpine.data('hypergrid', (config = {}) => ({
+  Alpine.data('hypersheet', (config = {}) => ({
     // --- Core State ---
     activeRow: config.initialRow || 0,
     activeCol: config.initialCol || 0,

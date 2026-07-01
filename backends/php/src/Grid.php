@@ -1,6 +1,6 @@
 <?php
 
-namespace HyperGrid;
+namespace Hypersheet;
 
 class Grid
 {
@@ -242,7 +242,7 @@ HTML;
             'sortable' => true,
         ], JSON_THROW_ON_ERROR);
         return <<<HTML
-<div x-data="hypergrid({$config})" @keydown.window="handleKey($event)" class="hg-overflow-auto">
+<div x-data="Hypersheet({$config})" @keydown.window="handleKey($event)" class="hg-overflow-auto">
     <table class="hg-grid hg-border-collapse">
         {$this->renderHeader()}
         {$this->renderBody()}

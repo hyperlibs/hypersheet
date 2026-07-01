@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="hypergrid",
+    name="Hypersheet",
     version="0.1.0",
-    description="HyperGrid Python backend - HTML-first spreadsheet grid with Casbin column security",
+    description="Hypersheet Python backend - HTML-first spreadsheet grid with Casbin column security",
     license="MIT",
     packages=find_packages(),
     install_requires=[

@@ -39,7 +39,7 @@ impl LogLevel {
     }
 }
 
-/// Optional Casbin authorization logger for HyperGrid
+/// Optional Casbin authorization logger for Hypersheet
 pub struct CasbinLogger {
     enabled: bool,
     min_level: LogLevel,
@@ -65,7 +65,7 @@ impl CasbinLogger {
         let log_file = config
             .get("log_file")
             .cloned()
-            .unwrap_or_else(|| "/tmp/hypergrid_casbin.log".to_string());
+            .unwrap_or_else(|| "/tmp/Hypersheet_casbin.log".to_string());
         let handlers: Vec<String> = config
             .get("handlers")
             .map(|s| s.split(',').map(|h| h.trim().to_string()).collect())
@@ -108,7 +108,7 @@ impl CasbinLogger {
             None => String::new(),
         };
         let entry = format!(
-            "[{}] [hypergrid.casbin.{}] {}{}\n",
+            "[{}] [Hypersheet.casbin.{}] {}{}\n",
             timestamp, level.as_str(), message, ctx_str
         );
 

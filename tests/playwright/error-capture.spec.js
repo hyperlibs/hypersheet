@@ -1,10 +1,10 @@
 const { test, expect } = require('@playwright/test');
-const { HyperGridTest } = require('../../src/js/playwright-helper.js');
+const { HypersheetTest } = require('../../src/js/playwright-helper.js');
 
 test.describe('Error Resilience', () => {
 
   test('grid renders with missing data gracefully', async ({ page }) => {
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await page.route('**/api/grid/**', (route) => route.abort('connectionrefused'));
     await page.goto('/?user=alice');
     await page.waitForLoadState('networkidle');
@@ -14,7 +14,7 @@ test.describe('Error Resilience', () => {
   });
 
   test('invalid cell input does not break grid', async ({ page }) => {
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await page.goto('/?user=alice');
     await grid.waitForGrid();
     await grid.setCellText(0, 0, 'A'.repeat(10000));
@@ -25,7 +25,7 @@ test.describe('Error Resilience', () => {
   });
 
   test('rapid keyboard navigation does not crash', async ({ page }) => {
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await page.goto('/?user=alice');
     await grid.waitForGrid();
     for (let i = 0; i < 50; i++) await page.keyboard.press('ArrowRight');

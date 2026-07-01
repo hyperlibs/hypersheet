@@ -1,25 +1,25 @@
 /**
- * HyperGrid Yjs Conflict Resolution Provider
+ * Hypersheet Yjs Conflict Resolution Provider
  *
  * OPTIONAL module — only loads if Yjs is present on the page.
  * Enables real-time collaborative editing with automatic conflict resolution
  * using Yjs CRDT.
  *
- * To enable, add the `data-hypergrid-yjs` attribute to your grid container:
+ * To enable, add the `data-hypersheet-yjs` attribute to your grid container:
  *
- *   <div x-data="hypergrid(...)"
- *        data-hypergrid-yjs='{"roomName":"grid-123","providerUrl":"ws://localhost:1234"}'>
+ *   <div x-data="hypersheet(...)"
+ *        data-hypersheet-yjs='{"roomName":"grid-123","providerUrl":"ws://localhost:1234"}'>
  *
  * Or import and instantiate manually:
  *
- *   import { HyperGridYjs } from './yjs-provider.js';
- *   const yjs = new HyperGridYjs(gridEl, { providerUrl: 'ws://...' });
+ *   import { HypersheetYjs } from './yjs-provider.js';
+ *   const yjs = new HypersheetYjs(gridEl, { providerUrl: 'ws://...' });
  *   yjs.destroy(); // cleanup
  */
 
 const DEFAULTS = {
   /** Unique room/table identifier for Yjs document sync */
-  roomName: 'hypergrid',
+  roomName: 'hypersheet',
   /** WebSocket URL for y-websocket provider. null = local-only (no sync) */
   providerUrl: null,
   /** Auto-bind Alpine.js grid data to Yjs document */
@@ -36,7 +36,7 @@ const DEFAULTS = {
   debug: false,
 };
 
-class HyperGridYjs {
+class HypersheetYjs {
   constructor(gridElement, options = {}) {
     this.opts = { ...DEFAULTS, ...options };
     this.grid = gridElement;
@@ -51,7 +51,7 @@ class HyperGridYjs {
     // Graceful degradation if Yjs is not loaded
     if (typeof Y === 'undefined') {
       if (this.opts.debug) {
-        console.warn('[HyperGrid Yjs] Yjs library not loaded. Skipping CRDT setup.');
+        console.warn('[Hypersheet Yjs] Yjs library not loaded. Skipping CRDT setup.');
       }
       this._emit('yjs-status', { status: 'unavailable' });
       return;
@@ -98,7 +98,7 @@ class HyperGridYjs {
         this.doc
       );
     } else if (this.opts.debug) {
-      console.warn('[HyperGrid Yjs] No provider implementation found. Install y-websocket.');
+      console.warn('[Hypersheet Yjs] No provider implementation found. Install y-websocket.');
       return;
     }
 
@@ -108,7 +108,7 @@ class HyperGridYjs {
       this.connected = evt.status === 'connected';
       this._emit('yjs-status', { status: evt.status });
       if (this.opts.debug) {
-        console.log(`[HyperGrid Yjs] Provider status: ${evt.status}`);
+        console.log(`[Hypersheet Yjs] Provider status: ${evt.status}`);
       }
     });
 
@@ -213,14 +213,14 @@ class HyperGridYjs {
 
 // Auto-init from data attribute (opt-in)
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('[data-hypergrid-yjs]').forEach((el) => {
+  document.querySelectorAll('[data-hypersheet-yjs]').forEach((el) => {
     try {
-      const opts = JSON.parse(el.dataset.hypergridYjs || '{}');
-      el._hypergridYjs = new HyperGridYjs(el, opts);
+      const opts = JSON.parse(el.dataset.hypersheetYjs || '{}');
+      el._hypersheetYjs = new HypersheetYjs(el, opts);
     } catch (e) {
-      console.error('[HyperGrid Yjs] Init error:', e);
+      console.error('[Hypersheet Yjs] Init error:', e);
     }
   });
 });
 
-export { HyperGridYjs };
+export { HypersheetYjs };

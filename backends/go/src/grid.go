@@ -1,4 +1,4 @@
-package hypergrid
+package hypersheet
 
 import (
 	"encoding/json"
@@ -242,7 +242,7 @@ func (g *Grid) Render() template.HTML {
 	}
 	cfgJSON, _ := json.Marshal(cfg)
 	html := fmt.Sprintf(`
-<div x-data="hypergrid(%s)" @keydown.window="handleKey($event)" class="hg-overflow-auto">
+<div x-data="Hypersheet(%s)" @keydown.window="handleKey($event)" class="hg-overflow-auto">
     <table class="hg-grid hg-border-collapse">
         %s
         %s

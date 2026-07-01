@@ -28,7 +28,7 @@ pub struct ChecklistItem {
 /// A row of data represented as a map of column names to values
 pub type Row = std::collections::HashMap<String, String>;
 
-/// HyperGrid rendering engine for Rust
+/// Hypersheet rendering engine for Rust
 pub struct Grid {
     enforcer: Option<SyncedEnforcer>,
     user_id: String,
@@ -300,7 +300,7 @@ impl Grid {
             "sortable": true,
         });
         format!(
-            r#"<div x-data="hypergrid({})" @keydown.window="handleKey($event)" class="hg-overflow-auto">
+            r#"<div x-data="Hypersheet({})" @keydown.window="handleKey($event)" class="hg-overflow-auto">
     <table class="hg-grid hg-border-collapse">
         {}
         {}

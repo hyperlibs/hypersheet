@@ -1,6 +1,6 @@
 <?php
 
-namespace HyperGrid\Database;
+namespace Hypersheet\Database;
 
 class MysqlDriver implements DatabaseInterface
 {
@@ -10,7 +10,7 @@ class MysqlDriver implements DatabaseInterface
     {
         $host = $config['host'] ?? 'localhost';
         $port = $config['port'] ?? 3306;
-        $dbname = $config['database'] ?? 'hypergrid';
+        $dbname = $config['database'] ?? 'Hypersheet';
         $user = $config['username'] ?? 'root';
         $pass = $config['password'] ?? '';
         $charset = $config['charset'] ?? 'utf8mb4';

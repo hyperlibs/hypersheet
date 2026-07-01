@@ -1,11 +1,11 @@
 {
-    "name": "hypergrid/grid",
-    "description": "HyperGrid PHP backend - HTML-first spreadsheet grid with optional Casbin column security",
+    "name": "hypersheet/hypersheet",
+    "description": "Hypersheet PHP backend - HTML-first spreadsheet grid with optional Casbin column security",
     "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "HyperGrid\\": "src/"
+            "Hypersheet\\": "src/"
         },
     },
     "require": {

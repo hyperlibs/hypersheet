@@ -1,9 +1,9 @@
 {
-  "name": "hypergrid",
+  "name": "hypersheet",
   "version": "0.1.0",
   "description": "HTML-first, spreadsheet-like data grid component library built on Alpine.js and htmx",
   "license": "MIT",
-  "author": "HyperGrid Contributors",
+  "author": "Hypersheet Contributors",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hyperlibs/hypersheet.git"
@@ -16,14 +16,14 @@
     "alpinejs", "htmx", "grid", "datagrid", "spreadsheet",
     "hypermedia", "inline-editing", "html-first"
   ],
-  "main": "dist/hypergrid.js",
-  "style": "dist/hypergrid.css",
+  "main": "dist/hypersheet.js",
+  "style": "dist/hypersheet.css",
   "files": [
     "dist/"
   ],
   "scripts": {
-    "build:css": "cp src/css/hypergrid.css dist/hypergrid.css",
-    "build:js": "cp src/js/hypergrid.js dist/hypergrid.js",
+    "build:css": "cp src/css/hypersheet.css dist/hypersheet.css",
+    "build:js": "cp src/js/hypersheet.js dist/hypersheet.js",
     "build": "npm run build:css && npm run build:js",
     "prepublishOnly": "bun run build",
     "test": "bunx playwright test tests/playwright/keyboard-shortcuts.spec.js --config=tests/playwright/playwright.config.js"

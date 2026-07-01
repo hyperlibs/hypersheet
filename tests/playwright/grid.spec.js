@@ -1,5 +1,5 @@
 /**
- * HyperGrid Playwright Test Suite
+ * Hypersheet Playwright Test Suite
  *
  * Tests keyboard navigation, inline editing, chip cells, dropdowns,
  * sorting, row reordering, error states, and Casbin locking.
@@ -13,20 +13,20 @@
  */
 
 const { test, expect } = require('@playwright/test');
-const { HyperGridTest } = require('../../src/js/playwright-helper.js');
+const { HypersheetTest } = require('../../src/js/playwright-helper.js');
 
-test.describe('HyperGrid Core Functionality', () => {
+test.describe('Hypersheet Core Functionality', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/?user=alice');
   });
 
   test('grid renders with correct structure', async ({ page }) => {
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await grid.waitForGrid();
 
     // Should have a table element
-    const table = await page.locator('[x-data*="hypergrid"] table.hg-grid');
+    const table = await page.locator('[x-data*="Hypersheet"] table.hg-grid');
     await expect(table).toBeVisible();
 
     // Should have header row
@@ -35,7 +35,7 @@ test.describe('HyperGrid Core Functionality', () => {
   });
 
   test('keyboard navigation moves focus between cells', async ({ page }) => {
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await grid.waitForGrid();
 
     // Start at cell (0, 0)
@@ -63,7 +63,7 @@ test.describe('HyperGrid Core Functionality', () => {
   });
 
   test('cell text editing saves on blur', async ({ page }) => {
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await grid.waitForGrid();
 
     const newValue = 'Updated Name ' + Date.now();
@@ -79,7 +79,7 @@ test.describe('HyperGrid Core Functionality', () => {
   });
 
   test('chip cell dropdown switches status', async ({ page }) => {
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await grid.waitForGrid();
 
     await grid.setChipValue(0, 1, 'Paused');
@@ -90,7 +90,7 @@ test.describe('HyperGrid Core Functionality', () => {
   });
 
   test('tab key moves to next cell and enters edit', async ({ page }) => {
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await grid.waitForGrid();
 
     await grid.navigateToCell(0, 0);
@@ -103,7 +103,7 @@ test.describe('HyperGrid Core Functionality', () => {
   });
 
   test('escape key exits edit mode', async ({ page }) => {
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await grid.waitForGrid();
 
     await grid.navigateToCell(0, 0);
@@ -119,7 +119,7 @@ test.describe('HyperGrid Core Functionality', () => {
   });
 
   test('home and end keys navigate to first/last column', async ({ page }) => {
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await grid.waitForGrid();
 
     await grid.navigateToCell(0, 1);
@@ -136,10 +136,10 @@ test.describe('HyperGrid Core Functionality', () => {
   });
 });
 
-test.describe('HyperGrid Authorization & Error Handling', () => {
+test.describe('Hypersheet Authorization & Error Handling', () => {
 
   test('locked cells (Bob) are read-only', async ({ page }) => {
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
 
     // Login as Bob who has limited write access
     await page.goto('/?user=bob');
@@ -157,7 +157,7 @@ test.describe('HyperGrid Authorization & Error Handling', () => {
   test('hidden cells are not rendered', async ({ page }) => {
     // No columns are hidden with current policy
     // This test validates the hidden class exists when policy denies read
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await page.goto('/?user=bob');
     await grid.waitForGrid();
 
@@ -168,7 +168,7 @@ test.describe('HyperGrid Authorization & Error Handling', () => {
   });
 
   test('errors are captured on failed API calls', async ({ page }) => {
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await grid.waitForGrid();
 
     // Trigger a PUT to a non-existent endpoint
@@ -184,11 +184,11 @@ test.describe('HyperGrid Authorization & Error Handling', () => {
   });
 });
 
-test.describe('HyperGrid Yjs Collaboration', () => {
+test.describe('Hypersheet Yjs Collaboration', () => {
 
   test('Yjs provider initializes without errors', async ({ page }) => {
     // Test without Yjs library loaded - should gracefully degrade
-    const grid = new HyperGridTest(page);
+    const grid = new HypersheetTest(page);
     await page.goto('/?user=alice');
     await grid.waitForGrid();
 

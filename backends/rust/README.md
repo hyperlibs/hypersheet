@@ -1,18 +1,18 @@
-# HyperGrid Rust Backend
+# Hypersheet Rust Backend
 
-Library for server-side rendering of HyperGrid tables. Casbin authorization is optional.
+Library for server-side rendering of Hypersheet tables. Casbin authorization is optional.
 
 ## Install
 
 ```toml
 [dependencies]
-hypergrid = "0.1"
+Hypersheet = "0.1"
 ```
 
 ## Quick Start
 
 ```rust
-use hypergrid::{Grid, Column, CellType, Row};
+use Hypersheet::{Grid, Column, CellType, Row};
 
 let grid = Grid::new(
     None, // enforcer (None = all cells editable)

@@ -1,24 +1,24 @@
-# HyperGrid Go Backend
+# Hypersheet Go Backend
 
-Library for server-side rendering of HyperGrid tables. Casbin authorization is optional.
+Library for server-side rendering of Hypersheet tables. Casbin authorization is optional.
 
 ## Install
 
 ```bash
-go get github.com/hypergrid/go
+go get github.com/hyperlibs/hypersheet/go
 ```
 
 ## Quick Start
 
 ```go
-import hypergrid "github.com/hypergrid/go"
+import Hypersheet "github.com/hyperlibs/hypersheet/go"
 
-grid := hypergrid.NewGrid(
-    []hypergrid.Column{
+grid := Hypersheet.NewGrid(
+    []Hypersheet.Column{
         {Name: "name", Label: "Name", Type: "text"},
         {Name: "status", Label: "Status", Type: "chip"},
     },
-    []hypergrid.Row{
+    []Hypersheet.Row{
         {"id": "1", "name": "Alice", "status": "Active"},
     },
 )
@@ -36,10 +36,10 @@ grid.WithLogger(logger)
 ## With Database
 
 ```go
-import "github.com/hypergrid/go/database"
+import "github.com/hyperlibs/hypersheet/go/database"
 
 db, _ := database.New("pgsql")
-db.Connect(map[string]string{"host": "localhost", "database": "hypergrid"})
+db.Connect(map[string]string{"host": "localhost", "database": "Hypersheet"})
 rows, _ := db.FetchRows("users", []string{"name", "status"}, "", true)
 ```
 

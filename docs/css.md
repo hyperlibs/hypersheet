@@ -1,6 +1,6 @@
-# HyperGrid CSS Reference
+# Hypersheet CSS Reference
 
-HyperGrid uses a Tailwind-like utility framework with the `hg-` prefix.
+Hypersheet uses a Tailwind-like utility framework with the `hg-` prefix.
 
 ## Grid Layout
 

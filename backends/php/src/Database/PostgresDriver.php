@@ -1,6 +1,6 @@
 <?php
 
-namespace HyperGrid\Database;
+namespace Hypersheet\Database;
 
 class PostgresDriver implements DatabaseInterface
 {
@@ -10,7 +10,7 @@ class PostgresDriver implements DatabaseInterface
     {
         $host = $config['host'] ?? 'localhost';
         $port = $config['port'] ?? 5432;
-        $dbname = $config['database'] ?? 'hypergrid';
+        $dbname = $config['database'] ?? 'Hypersheet';
         $user = $config['username'] ?? 'postgres';
         $pass = $config['password'] ?? '';
 

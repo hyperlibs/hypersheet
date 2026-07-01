@@ -1,4 +1,4 @@
-# HyperGrid Test Runner
+# Hypersheet Test Runner
 # Run from the project root
 
 param(
@@ -9,7 +9,7 @@ param(
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $ProjectRoot
 
-Write-Host "=== HyperGrid E2E Test Runner ===" -ForegroundColor Cyan
+Write-Host "=== Hypersheet E2E Test Runner ===" -ForegroundColor Cyan
 Write-Host "Target: $Target"
 Write-Host "URL: $Url"
 Write-Host ""

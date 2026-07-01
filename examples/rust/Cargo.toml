@@ -1,10 +1,10 @@
 [package]
-name = "hypergrid-rust-example"
+name = "hypersheet-example"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-hypergrid = { path = "../../backends/rust" }
+hypersheet = { path = "../../backends/rust" }
 axum = "0.7"
 tokio = { version = "1", features = ["full"] }
 casbin = "2.0"

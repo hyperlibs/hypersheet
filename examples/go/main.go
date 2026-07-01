@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/casbin/casbin/v2"
-	hypergrid "github.com/hypergrid/go/src"
+	hypersheet "github.com/hyperlibs/hypersheet/src"
 )
 
 //go:embed templates/*
@@ -55,13 +55,13 @@ p, bob, column:tier, write
 func main() {
 	initCasbin()
 
-	columns := []hypergrid.Column{
+	columns := []hypersheet.Column{
 		{Name: "name", Label: "User Profile", Type: "text"},
 		{Name: "status", Label: "Lifecycle State", Type: "chip"},
 		{Name: "tier", Label: "Assigned Subscription", Type: "dropdown", Options: []string{"Free", "Premium", "Enterprise"}},
 	}
 
-	rows := []hypergrid.Row{
+	rows := []hypersheet.Row{
 		{"id": "1", "name": "Alice Johnson", "status": "Active", "tier": "Enterprise"},
 		{"id": "2", "name": "Bob Smith", "status": "Paused", "tier": "Free"},
 		{"id": "3", "name": "Carol Davis", "status": "Archived", "tier": "Premium"},
@@ -76,7 +76,7 @@ func main() {
 			userID = "alice"
 		}
 
-		grid := hypergrid.NewGrid(enforcer, userID, columns, rows)
+		grid := hypersheet.NewGrid(enforcer, userID, columns, rows)
 		gridHTML := grid.Render()
 
 		tmpl := template.Must(template.ParseFS(templateFS, "templates/page.html"))
@@ -110,6 +110,6 @@ func main() {
 		json.NewEncoder(w).Encode(map[string]interface{}{"status": "ok", "reorder": data})
 	})
 
-	log.Println("HyperGrid Go example running at http://localhost:8000")
+	log.Println("hypersheet Go example running at http://localhost:8000")
 	log.Fatal(http.ListenAndServe(":8000", mux))
 }

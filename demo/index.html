@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HyperGrid Demo</title>
-  <script defer src="../src/js/hypergrid.js"></script>
+  <title>Hypersheet Demo</title>
+  <script defer src="../src/js/hypersheet.js"></script>
   <script defer src="https://unpkg.com/alpinejs@3/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-  <link rel="stylesheet" href="../src/css/hypergrid.css">
+  <link rel="stylesheet" href="../src/css/hypersheet.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f3f4f6; color: #1f2937; padding: 2rem; }
@@ -57,7 +57,7 @@
      @row-reordered.window="onReorder($event)"
      @grid-sort.window="onSort($event)">
   <header>
-    <h1>⚡ HyperGrid</h1>
+    <h1>⚡ Hypersheet</h1>
     <p>Alpine.js + htmx spreadsheet grid. Use keyboard shortcuts for navigation, editing, and formatting.</p>
   </header>
 
@@ -86,12 +86,12 @@
 
     <div class="grid-wrapper">
       <!--
-        The grid controller `hypergrid()` manages keyboard navigation and cell formatting.
+        The grid controller `hypersheet()` manages keyboard navigation and cell formatting.
         maxRows is kept in sync with the outer rows array via $watch.
         Events bubble up to demoApp() for data operations.
       -->
       <div id="main-grid"
-           x-data="hypergrid({ rows: rows.length, cols: 5, sortable: true })"
+           x-data="hypersheet({ rows: rows.length, cols: 5, sortable: true })"
            @keydown.window="handleKey($event)">
 
         <table class="hg-grid">
@@ -275,7 +275,7 @@ function demoApp() {
     init() {
       this.resetGrid();
 
-      // Track grid state from the hypergrid component
+      // Track grid state from the hypersheet component
       this.$watch('tab', () => {
         if (this.tab === 'grid') {
           this.$nextTick(() => this._syncGridState());
@@ -342,7 +342,7 @@ function demoApp() {
       this.setLastAction('Grid reset');
     },
 
-    // ---- Event Handlers from hypergrid ----
+      // ---- Event Handlers from hypersheet ----
     onInsert(event) {
       const { afterRow } = event.detail;
       const idx = afterRow + 1;

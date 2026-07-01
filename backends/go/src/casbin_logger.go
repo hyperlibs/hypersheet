@@ -1,4 +1,4 @@
-package hypergrid
+package hypersheet
 
 import (
 	"fmt"
@@ -60,7 +60,7 @@ func NewCasbinLogger(config map[string]string) *CasbinLogger {
 	}
 
 	if cl.logFile == "" {
-		cl.logFile = "/tmp/hypergrid_casbin.log"
+		cl.logFile = "/tmp/Hypersheet_casbin.log"
 	}
 	if len(cl.handlers) == 0 || cl.handlers[0] == "" {
 		cl.handlers = []string{"file"}
@@ -112,7 +112,7 @@ func (cl *CasbinLogger) write(level LogLevel, msg string, ctx map[string]interfa
 	if len(ctx) > 0 {
 		ctxStr = " " + fmt.Sprintf("%v", ctx)
 	}
-	entry := fmt.Sprintf("[%s] [hypergrid.casbin.%s] %s%s\n", timestamp, level, msg, ctxStr)
+	entry := fmt.Sprintf("[%s] [Hypersheet.casbin.%s] %s%s\n", timestamp, level, msg, ctxStr)
 
 	for _, h := range cl.handlers {
 		switch strings.TrimSpace(h) {

@@ -1,4 +1,4 @@
-# HyperGrid Demos
+# Hypersheet Demos
 
 ## Static Demo (No Backend Required)
 

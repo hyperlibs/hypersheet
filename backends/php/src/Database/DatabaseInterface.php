@@ -1,6 +1,6 @@
 <?php
 
-namespace HyperGrid\Database;
+namespace Hypersheet\Database;
 
 interface DatabaseInterface
 {

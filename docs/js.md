@@ -1,11 +1,11 @@
-# HyperGrid JS API Reference
+# Hypersheet JS API Reference
 
-The HyperGrid Alpine.js plugin provides spreadsheet-like keyboard navigation and cell interaction.
+The Hypersheet Alpine.js plugin provides spreadsheet-like keyboard navigation and cell interaction.
 
 ## Initialization
 
 ```html
-<div x-data="hypergrid({ rows: 10, cols: 4, sortable: true })"
+<div x-data="Hypersheet({ rows: 10, cols: 4, sortable: true })"
      @keydown.window="handleKey($event)">
 ```
 

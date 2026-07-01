@@ -1,6 +1,6 @@
 <?php
 /**
- * HyperGrid Standalone PHP Demo
+ * Hypersheet Standalone PHP Demo
  * Run: php -S localhost:8000 backend.php
  *
  * Self-contained demo — no Composer required.
@@ -8,9 +8,9 @@
  * checklists, sorting, row reorder, and simulated Casbin auth.
  */
 
-// ---- Minimal PSR-4 Autoloader for HyperGrid ----
+// ---- Minimal PSR-4 Autoloader for Hypersheet ----
 spl_autoload_register(function ($class) {
-    $prefix = 'HyperGrid\\';
+    $prefix = 'Hypersheet\\';
     $base = __DIR__ . '/../backends/php/src/';
     if (strncmp($prefix, $class, strlen($prefix)) === 0) {
         $relative = substr($class, strlen($prefix));
@@ -19,11 +19,11 @@ spl_autoload_register(function ($class) {
     }
 });
 
-use HyperGrid\Grid;
-use HyperGrid\Database\DatabaseFactory;
+use Hypersheet\Grid;
+use Hypersheet\Database\DatabaseFactory;
 
 // ---- Configuration ----
-$dataFile = __DIR__ . '/data/hypergrid_demo.json';
+$dataFile = __DIR__ . '/data/Hypersheet_demo.json';
 $modelConf = __DIR__ . '/data/casbin_model.conf';
 $policyCsv = __DIR__ . '/data/casbin_policy.csv';
 
@@ -212,7 +212,7 @@ $grid = new Grid($columns, $rows);
 $grid->withAuthorization(new \Casbin\Enforcer($modelConf, $policyCsv), $userId);
 
 // Optional: enable logging
-$logger = new \HyperGrid\CasbinLogger(['enabled' => true, 'log_file' => __DIR__ . '/data/casbin.log']);
+$logger = new \Hypersheet\CasbinLogger(['enabled' => true, 'log_file' => __DIR__ . '/data/casbin.log']);
 $grid->withLogger($logger);
 
 $gridHtml = $grid->render();
@@ -229,12 +229,12 @@ $currentUser = $userDisplay[$userId] ?? $userDisplay['alice'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HyperGrid — PHP Demo</title>
+    <title>Hypersheet — PHP Demo</title>
     <script src="https://unpkg.com/alpinejs@3/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script defer src="/src/js/hypergrid.js"></script>
-    <link rel="stylesheet" href="/src/css/hypergrid.css">
+<script defer src="/src/js/hypersheet.js"></script>
+  <link rel="stylesheet" href="/src/css/hypersheet.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f3f4f6; color: #1f2937; padding: 2rem; }
@@ -256,7 +256,7 @@ $currentUser = $userDisplay[$userId] ?? $userDisplay['alice'];
 </head>
 <body>
     <div class="container">
-        <h1>⚡ HyperGrid — PHP Demo</h1>
+        <h1>⚡ Hypersheet — PHP Demo</h1>
         <p class="subtitle">Live server-rendered grid with JSON file storage. htmx saves cells on blur.</p>
 
         <div class="user-bar">

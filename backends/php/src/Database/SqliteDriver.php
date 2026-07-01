@@ -1,6 +1,6 @@
 <?php
 
-namespace HyperGrid\Database;
+namespace Hypersheet\Database;
 
 class SqliteDriver implements DatabaseInterface
 {

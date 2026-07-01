@@ -1,4 +1,4 @@
-module github.com/hypergrid/go
+module github.com/hyperlibs/hypersheet
 
 go 1.21
 

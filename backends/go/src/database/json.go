@@ -18,7 +18,7 @@ type JsonDbDriver struct {
 func (d *JsonDbDriver) Connect(config map[string]string) error {
 	d.filePath = config["path"]
 	if d.filePath == "" {
-		d.filePath = "hypergrid.json"
+		d.filePath = "Hypersheet.json"
 	}
 	d.data = make(map[string][]Row)
 

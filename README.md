@@ -1,8 +1,8 @@
-# HyperGrid
+# Hypersheet
 
 **HTML-first, spreadsheet-like data grid component library.**
 
-HyperGrid is a lightweight, hypermedia-driven data grid built on [Alpine.js](https://alpinejs.dev/) and [htmx](https://htmx.org/). It delivers Excel-like inline editing, keyboard navigation, cell-level UI components (chips, dropdowns, checklists), column sorting, and row reordering — without heavy JavaScript bundles.
+Hypersheet is a lightweight, hypermedia-driven data grid built on [Alpine.js](https://alpinejs.dev/) and [htmx](https://htmx.org/). It delivers Excel-like inline editing, keyboard navigation, cell-level UI components (chips, dropdowns, checklists), column sorting, and row reordering — without heavy JavaScript bundles.
 
 ## Philosophy
 
@@ -17,11 +17,11 @@ HyperGrid is a lightweight, hypermedia-driven data grid built on [Alpine.js](htt
 ```html
 <!-- Include dependencies -->
 <script src="https://unpkg.com/alpinejs@3/dist/cdn.min.js" defer></script>
-<script src="https://unpkg.com/hypergrid@0.1/dist/hypergrid.js" defer></script>
-<link rel="stylesheet" href="https://unpkg.com/hypergrid@0.1/dist/hypergrid.css">
+<script src="https://unpkg.com/hypersheet@0.1/dist/hypersheet.js" defer></script>
+<link rel="stylesheet" href="https://unpkg.com/hypersheet@0.1/dist/hypersheet.css">
 
 <!-- Use the grid -->
-<div x-data="hypergrid({ rows: 10, cols: 4, sortable: true })"
+<div x-data="hypersheet({ rows: 10, cols: 4, sortable: true })"
      @keydown.window="handleKey($event)">
   <table class="hg-grid">
     <thead>
@@ -63,15 +63,15 @@ HyperGrid is a lightweight, hypermedia-driven data grid built on [Alpine.js](htt
 
 | Language | Package | Status |
 |----------|---------|--------|
-| PHP | `composer require hypergrid/grid` | ✅ Alpha |
-| Go | `go get github.com/hypergrid/go` | ✅ Alpha |
-| Python | `pip install hypergrid` | ✅ Alpha |
-| Rust | `cargo add hypergrid` | ✅ Alpha |
+| PHP | `composer require hypersheet/hypersheet` | ✅ Alpha |
+| Go | `go get github.com/hyperlibs/hypersheet` | ✅ Alpha |
+| Python | `pip install hypersheet` | ✅ Alpha |
+| Rust | `cargo add hypersheet` | ✅ Alpha |
 
 ## Documentation
 
-- [HyperGrid CSS Reference](./docs/css.md)
-- [HyperGrid JS API](./docs/js.md)
+- [Hypersheet CSS Reference](./docs/css.md)
+- [Hypersheet JS API](./docs/js.md)
 - [PHP Backend](./backends/php/README.md)
 - [Go Backend](./backends/go/README.md)
 - [Python Backend](./backends/python/README.md)

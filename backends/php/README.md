@@ -1,17 +1,17 @@
-# HyperGrid PHP Backend
+# Hypersheet PHP Backend
 
-Library for server-side rendering of HyperGrid tables. Casbin authorization is optional.
+Library for server-side rendering of Hypersheet tables. Casbin authorization is optional.
 
 ## Install
 
 ```bash
-composer require hypergrid/grid
+composer require Hypersheet/grid
 ```
 
 ## Quick Start
 
 ```php
-use HyperGrid\Grid;
+use Hypersheet\Grid;
 
 $grid = new Grid(
     columns: [
@@ -42,10 +42,10 @@ echo $grid->render();
 ## With Database
 
 ```php
-use HyperGrid\Database\DatabaseFactory;
+use Hypersheet\Database\DatabaseFactory;
 
 $db = DatabaseFactory::create('pgsql');
-$db->connect(['host' => 'localhost', 'database' => 'hypergrid', 'username' => 'postgres']);
+$db->connect(['host' => 'localhost', 'database' => 'Hypersheet', 'username' => 'postgres']);
 
 $rows = $db->fetchRows('users', ['name', 'status', 'tier']);
 $grid = new Grid($columns, $rows);

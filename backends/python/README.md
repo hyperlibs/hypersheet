@@ -1,34 +1,34 @@
-# HyperGrid Python Backend
+# Hypersheet Python Backend
 
-Library for server-side rendering of HyperGrid tables from Jinja3. Casbin authorization is optional.
+Library for server-side rendering of Hypersheet tables from Jinja3. Casbin authorization is optional.
 
 ## Install
 
 ```bash
-pip install hypergrid
+pip install Hypersheet
 ```
 
 ## Quick Start
 
 ```python
-from hypergrid import HyperGridJinjaEngine
+from Hypersheet import HypersheetJinjaEngine
 
-engine = HyperGridJinjaEngine()
+engine = HypersheetJinjaEngine()
 
 # Register in Jinja3
-env.globals["hypergrid_cell"] = engine.render_cell
-env.globals["hypergrid_render_grid"] = engine.render_grid
+env.globals["Hypersheet_cell"] = engine.render_cell
+env.globals["Hypersheet_render_grid"] = engine.render_grid
 ```
 
 ## With Casbin
 
 ```python
 import casbin
-from hypergrid import HyperGridJinjaEngine, CasbinLogger
+from Hypersheet import HypersheetJinjaEngine, CasbinLogger
 
 enforcer = casbin.Enforcer("model.conf", "policy.csv")
 logger = CasbinLogger(enabled=True)
-engine = HyperGridJinjaEngine(casbin_enforcer=enforcer, logger=logger)
+engine = HypersheetJinjaEngine(casbin_enforcer=enforcer, logger=logger)
 ```
 
 ## Cell Types
@@ -37,7 +37,7 @@ engine = HyperGridJinjaEngine(casbin_enforcer=enforcer, logger=logger)
 
 ## API (Jinja3 globals)
 
-- `{{ hypergrid_cell(row_id, col_name, value, r_idx, c_idx, cell_type="text", options=[]) }}`
-- `{{ hypergrid_render_grid(columns, rows) }}` — full table
-- `{{ hypergrid_render_header(columns) }}` — `<thead>` fragment
-- `{{ hypergrid_render_body(columns, rows) }}` — `<tbody>` fragment
+- `{{ Hypersheet_cell(row_id, col_name, value, r_idx, c_idx, cell_type="text", options=[]) }}`
+- `{{ Hypersheet_render_grid(columns, rows) }}` — full table
+- `{{ Hypersheet_render_header(columns) }}` — `<thead>` fragment
+- `{{ Hypersheet_render_body(columns, rows) }}` — `<tbody>` fragment
