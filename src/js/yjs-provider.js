@@ -129,7 +129,7 @@ class HypersheetYjs {
     if (this.opts.saveOnChange) {
       this.grid.addEventListener('change', (e) => {
         const input = e.target;
-        if (!input.matches('.hg-cell-input')) return;
+        if (!input.matches('.hs-cell-input')) return;
         const cell = input.closest('[data-row][data-col]');
         if (!cell) return;
         const rowId = cell.closest('tr')?.dataset?.id;
@@ -150,7 +150,7 @@ class HypersheetYjs {
         if (!rowId || !colName) return;
         const value = this.map.get(key)?.toString() ?? '';
         const input = this.grid.querySelector(
-          `tr[data-id="${CSS.escape(rowId)}"] .hg-cell-input[name="${CSS.escape(colName)}"]`
+          `tr[data-id="${CSS.escape(rowId)}"] .hs-cell-input[name="${CSS.escape(colName)}"]`
         );
         if (input) {
           input.value = value;

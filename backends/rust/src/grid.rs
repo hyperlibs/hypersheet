@@ -108,7 +108,7 @@ impl Grid {
         let can_write = self.can_access(col_name, "write");
 
         if !can_read {
-            return r#"<td class="hg-cell hg-hidden">🔒 Hidden</td>"#.to_string();
+            return r#"<td class="hs-cell hs-hidden">🔒 Hidden</td>"#.to_string();
         }
 
         let safe_val = Self::escape(value);
@@ -117,7 +117,7 @@ impl Grid {
 
         if !can_write {
             return format!(
-                r#"<td class="hg-cell hg-locked">🔒 {}</td>"#,
+                r#"<td class="hs-cell hs-locked">🔒 {}</td>"#,
                 safe_val
             );
         }
@@ -136,10 +136,10 @@ impl Grid {
 
     fn render_text_cell(&self, row_id: &str, col_name: &str, value: &str, r: usize, c: usize) -> String {
         format!(
-            r#"<td class="hg-cell hg-cell-text" data-row="{}" data-col="{}"
-    :class="isFocused({}, {}) ? 'hg-focused' : ''"
+            r#"<td class="hs-cell hs-cell-text" data-row="{}" data-col="{}"
+    :class="isFocused({}, {}) ? 'hs-focused' : ''"
     @click="focusCell({}, {}, false)">
-    <input type="text" value="{}" class="hg-cell-input"
+    <input type="text" value="{}" class="hs-cell-input"
            hx-put="/api/grid/cell" hx-trigger="blur"
            name="{}" hx-vals='{{"row_id": "{}"}}'>
 </td>"#,
@@ -149,29 +149,29 @@ impl Grid {
 
     fn render_chip_cell(&self, row_id: &str, col_name: &str, value: &str, r: usize, c: usize) -> String {
         let chip_class = match value.to_lowercase().as_str() {
-            "active" => "hg-chip-active",
-            "paused" | "pending" => "hg-chip-pending",
-            "archived" | "inactive" => "hg-chip-archived",
-            _ => "hg-chip-gray",
+            "active" => "hs-chip-active",
+            "paused" | "pending" => "hs-chip-pending",
+            "archived" | "inactive" => "hs-chip-archived",
+            _ => "hs-chip-gray",
         };
         format!(
-            r#"<td class="hg-cell hg-cell-chip" data-row="{}" data-col="{}"
-    :class="isFocused({}, {}) ? 'hg-focused' : ''"
+            r#"<td class="hs-cell hs-cell-chip" data-row="{}" data-col="{}"
+    :class="isFocused({}, {}) ? 'hs-focused' : ''"
     @click="focusCell({}, {}, false)"
     x-data="{{ open: false }}">
-    <div @click="open = !open" class="hg-cursor-pointer hg-select-none">
-        <span class="hg-chip {}">{}</span>
+    <div @click="open = !open" class="hs-cursor-pointer hs-select-none">
+        <span class="hs-chip {}">{}</span>
     </div>
-    <div class="hg-chip-menu" x-show="open" @click.away="open = false" x-transition>
-        <div class="hg-chip-option"
+    <div class="hs-chip-menu" x-show="open" @click.away="open = false" x-transition>
+        <div class="hs-chip-option"
              hx-put="/api/grid/cell"
              hx-vals='{{"row_id": "{}", "{}": "Active"}}'
              @click="open = false">Active</div>
-        <div class="hg-chip-option"
+        <div class="hs-chip-option"
              hx-put="/api/grid/cell"
              hx-vals='{{"row_id": "{}", "{}": "Paused"}}'
              @click="open = false">Paused</div>
-        <div class="hg-chip-option"
+        <div class="hs-chip-option"
              hx-put="/api/grid/cell"
              hx-vals='{{"row_id": "{}", "{}": "Archived"}}'
              @click="open = false">Archived</div>
@@ -195,7 +195,7 @@ impl Grid {
             .map(|opt| {
                 let safe = Self::escape(opt);
                 format!(
-                    r#"<div class="hg-dropdown-item"
+                    r#"<div class="hs-dropdown-item"
              hx-put="/api/grid/cell"
              hx-vals='{{"row_id": "{}", "{}": "{}"}}'
              @click="open = false">{}</div>"#,
@@ -206,15 +206,15 @@ impl Grid {
             .join("\n");
 
         format!(
-            r#"<td class="hg-cell hg-cell-dropdown" data-row="{}" data-col="{}"
-    :class="isFocused({}, {}) ? 'hg-focused' : ''"
+            r#"<td class="hs-cell hs-cell-dropdown" data-row="{}" data-col="{}"
+    :class="isFocused({}, {}) ? 'hs-focused' : ''"
     @click="focusCell({}, {}, false)"
     x-data="{{ open: false }}">
-    <div @click="open = !open" class="hg-dropdown-trigger">
+    <div @click="open = !open" class="hs-dropdown-trigger">
         <span>{}</span>
-        <span class="hg-dropdown-arrow">▼</span>
+        <span class="hs-dropdown-arrow">▼</span>
     </div>
-    <div class="hg-dropdown-menu" x-show="open" @click.away="open = false" x-transition>
+    <div class="hs-dropdown-menu" x-show="open" @click.away="open = false" x-transition>
         {}
     </div>
 </td>"#,
@@ -247,10 +247,10 @@ impl Grid {
             .join("\n");
 
         format!(
-            r#"<td class="hg-cell" data-row="{}" data-col="{}"
-    :class="isFocused({}, {}) ? 'hg-focused' : ''"
+            r#"<td class="hs-cell" data-row="{}" data-col="{}"
+    :class="isFocused({}, {}) ? 'hs-focused' : ''"
     @click="focusCell({}, {}, false)">
-    <div class="hg-checklist">{}</div>
+    <div class="hs-checklist">{}</div>
 </td>"#,
             r, c, r, c, r, c, checkboxes
         )
@@ -258,7 +258,7 @@ impl Grid {
 
     /// Render the table header
     pub fn render_header(&self) -> String {
-        let mut html = String::from(r#"<thead><tr class="hg-header"><th class="hg-cell hg-w-10"></th>"#);
+        let mut html = String::from(r#"<thead><tr class="hs-header"><th class="hs-cell hs-w-10"></th>"#);
         for (idx, col) in self.columns.iter().enumerate() {
             let label = if col.label.is_empty() {
                 Self::escape(&col.name)
@@ -266,7 +266,7 @@ impl Grid {
                 Self::escape(&col.label)
             };
             html.push_str(&format!(
-                r#"<th class="hg-cell hg-sort-btn" @click="toggleSort({})">{} <span class="hg-sort-icon">↕</span></th>"#,
+                r#"<th class="hs-cell hs-sort-btn" @click="toggleSort({})">{} <span class="hs-sort-icon">↕</span></th>"#,
                 idx, label
             ));
         }
@@ -280,8 +280,8 @@ impl Grid {
             String::from(r#"<tbody hx-post="/api/grid/reorder" hx-trigger="row-reordered">"#);
         for (r_idx, row) in self.rows.iter().enumerate() {
             let row_id = Self::escape(row.get("id").unwrap_or(&r_idx.to_string()));
-            html.push_str(&format!(r#"<tr class="hg-row" data-id="{}">"#, row_id));
-            html.push_str(r#"<td class="hg-cell hg-drag-handle">⋮⋮</td>"#);
+            html.push_str(&format!(r#"<tr class="hs-row" data-id="{}">"#, row_id));
+            html.push_str(r#"<td class="hs-cell hs-drag-handle">⋮⋮</td>"#);
             for (c_idx, col) in self.columns.iter().enumerate() {
                 let val = row.get(&col.name).cloned().unwrap_or_default();
                 html.push_str(&self.render_cell(&row_id, &col.name, &val, r_idx, c_idx, &col.cell_type));
@@ -300,8 +300,8 @@ impl Grid {
             "sortable": true,
         });
         format!(
-            r#"<div x-data="Hypersheet({})" @keydown.window="handleKey($event)" class="hg-overflow-auto">
-    <table class="hg-grid hg-border-collapse">
+            r#"<div x-data="Hypersheet({})" @keydown.window="handleKey($event)" class="hs-overflow-auto">
+    <table class="hs-grid hs-border-collapse">
         {}
         {}
     </table>

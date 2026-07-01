@@ -74,13 +74,13 @@ func (g *Grid) RenderCell(rowID, colName string, value interface{}, rIdx, cIdx i
 	canWrite := g.canAccess(colName, "write")
 
 	if !canRead {
-		return `<td class="hg-cell hg-hidden">🔒 Hidden</td>`
+		return `<td class="hs-cell hs-hidden">🔒 Hidden</td>`
 	}
 
 	safeVal := template.HTMLEscapeString(fmt.Sprintf("%v", value))
 
 	if !canWrite {
-		return template.HTML(fmt.Sprintf(`<td class="hg-cell hg-locked">🔒 %s</td>`, safeVal))
+		return template.HTML(fmt.Sprintf(`<td class="hs-cell hs-locked">🔒 %s</td>`, safeVal))
 	}
 
 	switch cellType {
@@ -99,10 +99,10 @@ func (g *Grid) renderTextCell(rowID, colName, value string, r, c int) template.H
 	colSafe := template.HTMLEscapeString(colName)
 	rowSafe := template.HTMLEscapeString(rowID)
 	html := fmt.Sprintf(`
-<td class="hg-cell hg-cell-text" data-row="%d" data-col="%d"
-    :class="isFocused(%d, %d) ? 'hg-focused' : ''"
+<td class="hs-cell hs-cell-text" data-row="%d" data-col="%d"
+    :class="isFocused(%d, %d) ? 'hs-focused' : ''"
     @click="focusCell(%d, %d, false)">
-    <input type="text" value="%s" class="hg-cell-input"
+    <input type="text" value="%s" class="hs-cell-input"
            hx-put="/api/grid/cell" hx-trigger="blur"
            name="%s" hx-vals='{"row_id": "%s"}'>
 </td>`, r, c, r, c, r, c, value, colSafe, rowSafe)
@@ -112,31 +112,31 @@ func (g *Grid) renderTextCell(rowID, colName, value string, r, c int) template.H
 func (g *Grid) renderChipCell(rowID, colName, value string, r, c int) template.HTML {
 	colSafe := template.HTMLEscapeString(colName)
 	rowSafe := template.HTMLEscapeString(rowID)
-	chipClass := "hg-chip-gray"
+	chipClass := "hs-chip-gray"
 	switch strings.ToLower(value) {
 	case "active":
-		chipClass = "hg-chip-active"
+		chipClass = "hs-chip-active"
 	case "paused", "pending":
-		chipClass = "hg-chip-pending"
+		chipClass = "hs-chip-pending"
 	case "archived", "inactive":
-		chipClass = "hg-chip-archived"
+		chipClass = "hs-chip-archived"
 	}
 	html := fmt.Sprintf(`
-<td class="hg-cell hg-cell-chip" data-row="%d" data-col="%d"
-    :class="isFocused(%d, %d) ? 'hg-focused' : ''"
+<td class="hs-cell hs-cell-chip" data-row="%d" data-col="%d"
+    :class="isFocused(%d, %d) ? 'hs-focused' : ''"
     @click="focusCell(%d, %d, false)"
     x-data="{ open: false }">
-    <div @click="open = !open" class="hg-cursor-pointer hg-select-none">
-        <span class="hg-chip %s">%s</span>
+    <div @click="open = !open" class="hs-cursor-pointer hs-select-none">
+        <span class="hs-chip %s">%s</span>
     </div>
-    <div class="hg-chip-menu" x-show="open" @click.away="open = false" x-transition>
-        <div class="hg-chip-option"
+    <div class="hs-chip-menu" x-show="open" @click.away="open = false" x-transition>
+        <div class="hs-chip-option"
              hx-put="/api/grid/cell" hx-vals='{"row_id": "%s", "%s": "Active"}'
              @click="open = false">Active</div>
-        <div class="hg-chip-option"
+        <div class="hs-chip-option"
              hx-put="/api/grid/cell" hx-vals='{"row_id": "%s", "%s": "Paused"}'
              @click="open = false">Paused</div>
-        <div class="hg-chip-option"
+        <div class="hs-chip-option"
              hx-put="/api/grid/cell" hx-vals='{"row_id": "%s", "%s": "Archived"}'
              @click="open = false">Archived</div>
     </div>
@@ -151,20 +151,20 @@ func (g *Grid) renderDropdownCell(rowID, colName, value string, r, c int, option
 	for _, opt := range options {
 		optSafe := template.HTMLEscapeString(opt)
 		items.WriteString(fmt.Sprintf(`
-        <div class="hg-dropdown-item"
+        <div class="hs-dropdown-item"
              hx-put="/api/grid/cell" hx-vals='{"row_id": "%s", "%s": "%s"}'
              @click="open = false">%s</div>`, rowSafe, colSafe, optSafe, optSafe))
 	}
 	html := fmt.Sprintf(`
-<td class="hg-cell hg-cell-dropdown" data-row="%d" data-col="%d"
-    :class="isFocused(%d, %d) ? 'hg-focused' : ''"
+<td class="hs-cell hs-cell-dropdown" data-row="%d" data-col="%d"
+    :class="isFocused(%d, %d) ? 'hs-focused' : ''"
     @click="focusCell(%d, %d, false)"
     x-data="{ open: false }">
-    <div @click="open = !open" class="hg-dropdown-trigger">
+    <div @click="open = !open" class="hs-dropdown-trigger">
         <span>%s</span>
-        <span class="hg-dropdown-arrow">▼</span>
+        <span class="hs-dropdown-arrow">▼</span>
     </div>
-    <div class="hg-dropdown-menu" x-show="open" @click.away="open = false" x-transition>
+    <div class="hs-dropdown-menu" x-show="open" @click.away="open = false" x-transition>
         %s
     </div>
 </td>`, r, c, r, c, r, c, value, items.String())
@@ -184,25 +184,25 @@ func (g *Grid) renderChecklistCell(rowID, colName string, value interface{}, r, 
               hx-vals='{"row_id": "%s", "task": "%s"}'> %s</label>`, rowSafe, taskSafe, taskSafe))
 	}
 	html := fmt.Sprintf(`
-<td class="hg-cell" data-row="%d" data-col="%d"
-    :class="isFocused(%d, %d) ? 'hg-focused' : ''"
+<td class="hs-cell" data-row="%d" data-col="%d"
+    :class="isFocused(%d, %d) ? 'hs-focused' : ''"
     @click="focusCell(%d, %d, false)">
-    <div class="hg-checklist">%s</div>
+    <div class="hs-checklist">%s</div>
 </td>`, r, c, r, c, r, c, items.String())
 	return template.HTML(html)
 }
 
 func (g *Grid) RenderHeader() template.HTML {
 	var b strings.Builder
-	b.WriteString(`<thead><tr class="hg-header">`)
-	b.WriteString(`<th class="hg-cell hg-w-10"></th>`)
+	b.WriteString(`<thead><tr class="hs-header">`)
+	b.WriteString(`<th class="hs-cell hs-w-10"></th>`)
 	for idx, col := range g.columns {
 		label := col.Label
 		if label == "" {
 			label = col.Name
 		}
 		safe := template.HTMLEscapeString(label)
-		b.WriteString(fmt.Sprintf(`<th class="hg-cell hg-sort-btn" @click="toggleSort(%d)">%s <span class="hg-sort-icon">↕</span></th>`, idx, safe))
+		b.WriteString(fmt.Sprintf(`<th class="hs-cell hs-sort-btn" @click="toggleSort(%d)">%s <span class="hs-sort-icon">↕</span></th>`, idx, safe))
 	}
 	b.WriteString(`</tr></thead>`)
 	return template.HTML(b.String())
@@ -216,8 +216,8 @@ func (g *Grid) RenderBody() template.HTML {
 		if rowID == "<nil>" {
 			rowID = fmt.Sprintf("%d", rIdx)
 		}
-		b.WriteString(fmt.Sprintf(`<tr class="hg-row" data-id="%s">`, template.HTMLEscapeString(rowID)))
-		b.WriteString(`<td class="hg-cell hg-drag-handle">⋮⋮</td>`)
+		b.WriteString(fmt.Sprintf(`<tr class="hs-row" data-id="%s">`, template.HTMLEscapeString(rowID)))
+		b.WriteString(`<td class="hs-cell hs-drag-handle">⋮⋮</td>`)
 		for cIdx, col := range g.columns {
 			colName := col.Name
 			cellType := col.Type
@@ -242,8 +242,8 @@ func (g *Grid) Render() template.HTML {
 	}
 	cfgJSON, _ := json.Marshal(cfg)
 	html := fmt.Sprintf(`
-<div x-data="Hypersheet(%s)" @keydown.window="handleKey($event)" class="hg-overflow-auto">
-    <table class="hg-grid hg-border-collapse">
+<div x-data="Hypersheet(%s)" @keydown.window="handleKey($event)" class="hs-overflow-auto">
+    <table class="hs-grid hs-border-collapse">
         %s
         %s
     </table>

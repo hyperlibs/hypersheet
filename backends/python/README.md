@@ -11,9 +11,9 @@ pip install Hypersheet
 ## Quick Start
 
 ```python
-from Hypersheet import HypersheetJinjaEngine
+from Hypersheet import hsJinjaEngine
 
-engine = HypersheetJinjaEngine()
+engine = hsJinjaEngine()
 
 # Register in Jinja3
 env.globals["Hypersheet_cell"] = engine.render_cell
@@ -24,11 +24,11 @@ env.globals["Hypersheet_render_grid"] = engine.render_grid
 
 ```python
 import casbin
-from Hypersheet import HypersheetJinjaEngine, CasbinLogger
+from Hypersheet import hsJinjaEngine, CasbinLogger
 
 enforcer = casbin.Enforcer("model.conf", "policy.csv")
 logger = CasbinLogger(enabled=True)
-engine = HypersheetJinjaEngine(casbin_enforcer=enforcer, logger=logger)
+engine = hsJinjaEngine(casbin_enforcer=enforcer, logger=logger)
 ```
 
 ## Cell Types

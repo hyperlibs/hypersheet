@@ -1,4 +1,4 @@
-from .engine import HypersheetJinjaEngine
+from .engine import hsJinjaEngine
 from .casbin_logger import CasbinLogger
 
-__all__ = ["HypersheetJinjaEngine", "CasbinLogger"]
+__all__ = ["hsJinjaEngine", "CasbinLogger"]

@@ -26,8 +26,8 @@
     .controls button.danger { color: #dc2626; border-color: #fca5a5; }
     .controls button.danger:hover { background: #fef2f2; }
     .grid-wrapper { background: white; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
-    .grid-wrapper .hg-cell { border-color: #e5e7eb; font-size: 0.875rem; }
-    .grid-wrapper .hg-header .hg-cell { background: #f9fafb; border-bottom: 2px solid #e5e7eb; padding: 0.75rem 0.5rem; font-size: 0.75rem; }
+    .grid-wrapper .hs-cell { border-color: #e5e7eb; font-size: 0.875rem; }
+    .grid-wrapper .hs-header .hs-cell { background: #f9fafb; border-bottom: 2px solid #e5e7eb; padding: 0.75rem 0.5rem; font-size: 0.75rem; }
     .legend { display: flex; gap: 1.5rem; justify-content: center; margin: 1rem 0; flex-wrap: wrap; font-size: 0.8125rem; }
     .legend kbd { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 0.25rem; padding: 0.125rem 0.375rem; font-size: 0.6875rem; font-family: inherit; }
     .legend .key-group { display: flex; align-items: center; gap: 0.25rem; }
@@ -98,85 +98,85 @@
            x-data="hypersheet({ rows: rows.length, cols: 5, sortable: true })"
            @keydown.window="handleKey($event)">
 
-        <table class="hg-grid">
+        <table class="hs-grid">
           <thead>
-            <tr class="hg-header">
-              <th class="hg-cell" style="width:2.5rem;min-width:2rem;"></th>
-              <th class="hg-cell hg-sort-btn" @click="toggleSort(0)">Name <span class="hg-sort-icon">↕</span></th>
-              <th class="hg-cell hg-sort-btn" @click="toggleSort(1)">Email <span class="hg-sort-icon">↕</span></th>
-              <th class="hg-cell hg-sort-btn" @click="toggleSort(2)">Status <span class="hg-sort-icon">↕</span></th>
-              <th class="hg-cell hg-sort-btn" @click="toggleSort(3)">Tier <span class="hg-sort-icon">↕</span></th>
-              <th class="hg-cell hg-sort-btn" @click="toggleSort(4)">Tasks <span class="hg-sort-icon">↕</span></th>
+            <tr class="hs-header">
+              <th class="hs-cell" style="width:2.5rem;min-width:2rem;"></th>
+              <th class="hs-cell hs-sort-btn" @click="toggleSort(0)">Name <span class="hs-sort-icon">↕</span></th>
+              <th class="hs-cell hs-sort-btn" @click="toggleSort(1)">Email <span class="hs-sort-icon">↕</span></th>
+              <th class="hs-cell hs-sort-btn" @click="toggleSort(2)">Status <span class="hs-sort-icon">↕</span></th>
+              <th class="hs-cell hs-sort-btn" @click="toggleSort(3)">Tier <span class="hs-sort-icon">↕</span></th>
+              <th class="hs-cell hs-sort-btn" @click="toggleSort(4)">Tasks <span class="hs-sort-icon">↕</span></th>
             </tr>
           </thead>
           <tbody>
             <template x-for="(row, rIdx) in rows" :key="row.id">
-              <tr class="hg-row" :data-id="row.id">
-                <td class="hg-cell hg-drag-handle" style="text-align:center;">⋮⋮</td>
+              <tr class="hs-row" :data-id="row.id">
+                <td class="hs-cell hs-drag-handle" style="text-align:center;">⋮⋮</td>
 
                 <!-- Name (Text) -->
-                <td class="hg-cell hg-cell-text"
+                <td class="hs-cell hs-cell-text"
                     :data-row="rIdx" data-col="0"
-                    :class="focusedKey === rIdx + ':0' ? 'hg-focused' : ''"
+                    :class="focusedKey === rIdx + ':0' ? 'hs-focused' : ''"
                     @click="focusCell(rIdx, 0, false); $dispatch('cell-focus', {row:rIdx, col:0})">
-                  <input type="text" class="hg-cell-input" x-model="row.name"
+                  <input type="text" class="hs-cell-input" x-model="row.name"
                          @blur="row.name = $el.value">
                 </td>
 
                 <!-- Email (Text) -->
-                <td class="hg-cell hg-cell-text"
+                <td class="hs-cell hs-cell-text"
                     :data-row="rIdx" data-col="1"
-                    :class="focusedKey === rIdx + ':1' ? 'hg-focused' : ''"
+                    :class="focusedKey === rIdx + ':1' ? 'hs-focused' : ''"
                     @click="focusCell(rIdx, 1, false); $dispatch('cell-focus', {row:rIdx, col:1})">
-                  <input type="text" class="hg-cell-input" x-model="row.email"
+                  <input type="text" class="hs-cell-input" x-model="row.email"
                          @blur="row.email = $el.value">
                 </td>
 
                 <!-- Status (Chip) -->
-                <td class="hg-cell hg-cell-chip"
+                <td class="hs-cell hs-cell-chip"
                     :data-row="rIdx" data-col="2"
-                    :class="focusedKey === rIdx + ':2' ? 'hg-focused' : ''"
+                    :class="focusedKey === rIdx + ':2' ? 'hs-focused' : ''"
                     @click="focusCell(rIdx, 2, false); $dispatch('cell-focus', {row:rIdx, col:2})"
                     x-data="{ open: false }">
-                  <div @click="open = !open" class="hg-cursor-pointer hg-select-none">
-                    <span class="hg-chip"
+                  <div @click="open = !open" class="hs-cursor-pointer hs-select-none">
+                    <span class="hs-chip"
                           :class="{
-                            'hg-chip-active': row.status === 'Active',
-                            'hg-chip-pending': row.status === 'Paused',
-                            'hg-chip-archived': row.status === 'Archived'
+                            'hs-chip-active': row.status === 'Active',
+                            'hs-chip-pending': row.status === 'Paused',
+                            'hs-chip-archived': row.status === 'Archived'
                           }"
                           x-text="row.status"></span>
                   </div>
-                  <div class="hg-chip-menu" x-show="open" @click.away="open = false" x-transition>
+                  <div class="hs-chip-menu" x-show="open" @click.away="open = false" x-transition>
                     <template x-for="s in ['Active','Paused','Archived']" :key="s">
-                      <div class="hg-chip-option" @click="row.status = s; open = false" x-text="s"></div>
+                      <div class="hs-chip-option" @click="row.status = s; open = false" x-text="s"></div>
                     </template>
                   </div>
                 </td>
 
                 <!-- Tier (Dropdown) -->
-                <td class="hg-cell hg-cell-dropdown"
+                <td class="hs-cell hs-cell-dropdown"
                     :data-row="rIdx" data-col="3"
-                    :class="focusedKey === rIdx + ':3' ? 'hg-focused' : ''"
+                    :class="focusedKey === rIdx + ':3' ? 'hs-focused' : ''"
                     @click="focusCell(rIdx, 3, false); $dispatch('cell-focus', {row:rIdx, col:3})"
                     x-data="{ open: false }">
-                  <div @click="open = !open" class="hg-dropdown-trigger">
+                  <div @click="open = !open" class="hs-dropdown-trigger">
                     <span x-text="row.tier"></span>
-                    <span class="hg-dropdown-arrow">▼</span>
+                    <span class="hs-dropdown-arrow">▼</span>
                   </div>
-                  <div class="hg-dropdown-menu" x-show="open" @click.away="open = false" x-transition>
+                  <div class="hs-dropdown-menu" x-show="open" @click.away="open = false" x-transition>
                     <template x-for="opt in ['Free','Premium','Enterprise']" :key="opt">
-                      <div class="hg-dropdown-item" @click="row.tier = opt; open = false" x-text="opt"></div>
+                      <div class="hs-dropdown-item" @click="row.tier = opt; open = false" x-text="opt"></div>
                     </template>
                   </div>
                 </td>
 
                 <!-- Tasks (Checklist) -->
-                <td class="hg-cell"
+                <td class="hs-cell"
                     :data-row="rIdx" data-col="4"
-                    :class="focusedKey === rIdx + ':4' ? 'hg-focused' : ''"
+                    :class="focusedKey === rIdx + ':4' ? 'hs-focused' : ''"
                     @click="focusCell(rIdx, 4, false); $dispatch('cell-focus', {row:rIdx, col:4})">
-                  <div class="hg-checklist">
+                  <div class="hs-checklist">
                     <template x-for="(task, tIdx) in row.tasks" :key="tIdx">
                       <label>
                         <input type="checkbox" x-model="task.done">
@@ -273,56 +273,56 @@
                }
              ]
            })">
-        <table class="hg-grid hg-grid-provider">
+        <table class="hs-grid hs-grid-provider">
           <thead>
-            <tr class="hg-header">
-              <th class="hg-cell" style="width:2.5rem;min-width:2rem;"></th>
-              <th class="hg-cell">Name</th>
-              <th class="hg-cell">Role <span style="font-size:0.7rem;color:#9ca3af;">(static)</span></th>
-              <th class="hg-cell">Region <span style="font-size:0.7rem;color:#9ca3af;">(memory)</span></th>
-              <th class="hg-cell">Status <span style="font-size:0.7rem;color:#9ca3af;">(static)</span></th>
+            <tr class="hs-header">
+              <th class="hs-cell" style="width:2.5rem;min-width:2rem;"></th>
+              <th class="hs-cell">Name</th>
+              <th class="hs-cell">Role <span style="font-size:0.7rem;color:#9ca3af;">(static)</span></th>
+              <th class="hs-cell">Region <span style="font-size:0.7rem;color:#9ca3af;">(memory)</span></th>
+              <th class="hs-cell">Status <span style="font-size:0.7rem;color:#9ca3af;">(static)</span></th>
             </tr>
           </thead>
           <tbody>
             <template x-for="(row, rIdx) in providerRows" :key="row.id">
-              <tr class="hg-row">
-                <td class="hg-cell hg-drag-handle">⋮⋮</td>
-                <td class="hg-cell" :class="focusedKey === rIdx + ':0' ? 'hg-focused' : ''">
-                  <input class="hg-cell-input" type="text" x-model="providerRows[rIdx].name"
+              <tr class="hs-row">
+                <td class="hs-cell hs-drag-handle">⋮⋮</td>
+                <td class="hs-cell" :class="focusedKey === rIdx + ':0' ? 'hs-focused' : ''">
+                  <input class="hs-cell-input" type="text" x-model="providerRows[rIdx].name"
                          @focus="focusCell(rIdx, 0, false)"
                          @blur="$dispatch('cell-focus', {row:rIdx, col:0})"
                          name="name">
                 </td>
-                <td class="hg-cell hg-cell-dropdown" :class="focusedKey === rIdx + ':1' ? 'hg-focused' : ''"
+                <td class="hs-cell hs-cell-dropdown" :class="focusedKey === rIdx + ':1' ? 'hs-focused' : ''"
                     x-data="{ open: false }">
-                  <div @click="open = !open" class="hg-dropdown-trigger">
+                  <div @click="open = !open" class="hs-dropdown-trigger">
                     <span x-text="providerRows[rIdx].role ? (getColumnOptions(1).find(o => o.value === providerRows[rIdx].role)?.label || providerRows[rIdx].role) : 'Select...'"></span>
-                    <span class="hg-dropdown-arrow">▼</span>
+                    <span class="hs-dropdown-arrow">▼</span>
                   </div>
-                  <div class="hg-dropdown-menu" x-show="open" @click.away="open = false">
+                  <div class="hs-dropdown-menu" x-show="open" @click.away="open = false">
                     <template x-for="opt in getColumnOptions(1)" :key="opt.value">
-                      <div class="hg-dropdown-item" @click="providerRows[rIdx].role = opt.value; open = false" x-text="opt.label"></div>
+                      <div class="hs-dropdown-item" @click="providerRows[rIdx].role = opt.value; open = false" x-text="opt.label"></div>
                     </template>
                   </div>
                 </td>
-                <td class="hg-cell hg-cell-dropdown" :class="focusedKey === rIdx + ':2' ? 'hg-focused' : ''"
+                <td class="hs-cell hs-cell-dropdown" :class="focusedKey === rIdx + ':2' ? 'hs-focused' : ''"
                     x-data="{ open: false }">
-                  <div @click="open = !open" class="hg-dropdown-trigger">
+                  <div @click="open = !open" class="hs-dropdown-trigger">
                     <span x-text="providerRows[rIdx].region ? (getColumnOptions(2).find(o => o.value === providerRows[rIdx].region)?.label || providerRows[rIdx].region) : 'Select...'"></span>
-                    <span class="hg-dropdown-arrow">▼</span>
+                    <span class="hs-dropdown-arrow">▼</span>
                   </div>
-                  <div class="hg-dropdown-menu" x-show="open" @click.away="open = false">
+                  <div class="hs-dropdown-menu" x-show="open" @click.away="open = false">
                     <template x-for="opt in getColumnOptions(2)" :key="opt.value">
-                      <div class="hg-dropdown-item" @click="providerRows[rIdx].region = opt.value; open = false" x-text="opt.label"></div>
+                      <div class="hs-dropdown-item" @click="providerRows[rIdx].region = opt.value; open = false" x-text="opt.label"></div>
                     </template>
                   </div>
                 </td>
-                <td class="hg-cell" :class="focusedKey === rIdx + ':3' ? 'hg-focused' : ''">
-                  <span class="hg-chip"
+                <td class="hs-cell" :class="focusedKey === rIdx + ':3' ? 'hs-focused' : ''">
+                  <span class="hs-chip"
                         :class="{
-                          'hg-chip-active': providerRows[rIdx].status === 'active',
-                          'hg-chip-paused': providerRows[rIdx].status === 'pending',
-                          'hg-chip-archived': providerRows[rIdx].status === 'inactive'
+                          'hs-chip-active': providerRows[rIdx].status === 'active',
+                          'hs-chip-paused': providerRows[rIdx].status === 'pending',
+                          'hs-chip-archived': providerRows[rIdx].status === 'inactive'
                         }"
                         x-text="getColumnOptions(3).find(o => o.value === providerRows[rIdx].status)?.label || providerRows[rIdx].status">
                   </span>
@@ -404,63 +404,63 @@
                ]
              }
            })">
-        <table class="hg-grid">
+        <table class="hs-grid">
           <thead>
-            <tr class="hg-header">
-              <th class="hg-cell" style="width:1.5rem;"></th>
-              <th class="hg-cell" x-show="isColumnVisible(0)">Name <span style="color:#dc2626;" x-show="columns[0]?.required">*</span></th>
-              <th class="hg-cell" x-show="isColumnVisible(1)">Email <span style="color:#dc2626;" x-show="columns[1]?.required">*</span></th>
-              <th class="hg-cell" x-show="isColumnVisible(2)">Role <span style="color:#dc2626;" x-show="columns[2]?.required">*</span></th>
-              <th class="hg-cell" x-show="isColumnVisible(3)">Start Date</th>
-              <th class="hg-cell" x-show="isColumnVisible(4)">Notes</th>
+            <tr class="hs-header">
+              <th class="hs-cell" style="width:1.5rem;"></th>
+              <th class="hs-cell" x-show="isColumnVisible(0)">Name <span style="color:#dc2626;" x-show="columns[0]?.required">*</span></th>
+              <th class="hs-cell" x-show="isColumnVisible(1)">Email <span style="color:#dc2626;" x-show="columns[1]?.required">*</span></th>
+              <th class="hs-cell" x-show="isColumnVisible(2)">Role <span style="color:#dc2626;" x-show="columns[2]?.required">*</span></th>
+              <th class="hs-cell" x-show="isColumnVisible(3)">Start Date</th>
+              <th class="hs-cell" x-show="isColumnVisible(4)">Notes</th>
             </tr>
           </thead>
           <tbody>
             <template x-for="(row, rIdx) in schemaRows" :key="row.id">
-              <tr class="hg-row">
-                <td class="hg-cell" style="text-align:center;font-size:0.7rem;color:#9ca3af;" x-text="rIdx + 1"></td>
-                <td class="hg-cell hg-cell-text" :data-row="rIdx" data-col="0"
-                    :class="(focusedKey === rIdx + ':0' ? 'hg-focused' : '') + ' ' + (getColumnErrors(0).length ? 'hg-cell-error' : '')"
+              <tr class="hs-row">
+                <td class="hs-cell" style="text-align:center;font-size:0.7rem;color:#9ca3af;" x-text="rIdx + 1"></td>
+                <td class="hs-cell hs-cell-text" :data-row="rIdx" data-col="0"
+                    :class="(focusedKey === rIdx + ':0' ? 'hs-focused' : '') + ' ' + (getColumnErrors(0).length ? 'hs-cell-error' : '')"
                     x-show="isColumnVisible(0)"
                     @click="focusCell(rIdx, 0, false)">
-                  <input type="text" class="hg-cell-input" x-model="schemaRows[rIdx].name"
+                  <input type="text" class="hs-cell-input" x-model="schemaRows[rIdx].name"
                          @blur="schemaRows[rIdx].name = $el.value; validateCell(rIdx, 0)">
                 </td>
-                <td class="hg-cell hg-cell-text" :data-row="rIdx" data-col="1"
-                    :class="(focusedKey === rIdx + ':1' ? 'hg-focused' : '') + ' ' + (getColumnErrors(1).length ? 'hg-cell-error' : '')"
+                <td class="hs-cell hs-cell-text" :data-row="rIdx" data-col="1"
+                    :class="(focusedKey === rIdx + ':1' ? 'hs-focused' : '') + ' ' + (getColumnErrors(1).length ? 'hs-cell-error' : '')"
                     x-show="isColumnVisible(1)"
                     @click="focusCell(rIdx, 1, false)">
-                  <input type="text" class="hg-cell-input" x-model="schemaRows[rIdx].email"
+                  <input type="text" class="hs-cell-input" x-model="schemaRows[rIdx].email"
                          @blur="schemaRows[rIdx].email = $el.value; validateCell(rIdx, 1)">
                 </td>
-                <td class="hg-cell hg-cell-dropdown" :data-row="rIdx" data-col="2"
-                    :class="(focusedKey === rIdx + ':2' ? 'hg-focused' : '')"
+                <td class="hs-cell hs-cell-dropdown" :data-row="rIdx" data-col="2"
+                    :class="(focusedKey === rIdx + ':2' ? 'hs-focused' : '')"
                     x-show="isColumnVisible(2)"
                     x-data="{ open: false }"
                     @click="focusCell(rIdx, 2, false)">
-                  <div @click="open = !open" class="hg-dropdown-trigger">
+                  <div @click="open = !open" class="hs-dropdown-trigger">
                     <span x-text="getColumnOptions(2).find(o => o.value === schemaRows[rIdx].role)?.label || schemaRows[rIdx].role || 'Select...'"></span>
-                    <span class="hg-dropdown-arrow">▼</span>
+                    <span class="hs-dropdown-arrow">▼</span>
                   </div>
-                  <div class="hg-dropdown-menu" x-show="open" @click.away="open = false">
+                  <div class="hs-dropdown-menu" x-show="open" @click.away="open = false">
                     <template x-for="opt in getColumnOptions(2)" :key="opt.value">
-                      <div class="hg-dropdown-item" @click="schemaRows[rIdx].role = opt.value; open = false; validateCell(rIdx, 2)" x-text="opt.label"></div>
+                      <div class="hs-dropdown-item" @click="schemaRows[rIdx].role = opt.value; open = false; validateCell(rIdx, 2)" x-text="opt.label"></div>
                     </template>
                   </div>
                 </td>
-                <td class="hg-cell hg-cell-text" :data-row="rIdx" data-col="3"
-                    :class="focusedKey === rIdx + ':3' ? 'hg-focused' : ''"
+                <td class="hs-cell hs-cell-text" :data-row="rIdx" data-col="3"
+                    :class="focusedKey === rIdx + ':3' ? 'hs-focused' : ''"
                     x-show="isColumnVisible(3)"
                     @click="focusCell(rIdx, 3, false)">
-                  <input type="text" class="hg-cell-input" x-model="schemaRows[rIdx].startDate"
+                  <input type="text" class="hs-cell-input" x-model="schemaRows[rIdx].startDate"
                          @blur="schemaRows[rIdx].startDate = $el.value"
                          style="text-align:center;">
                 </td>
-                <td class="hg-cell hg-cell-text" :data-row="rIdx" data-col="4"
-                    :class="(focusedKey === rIdx + ':4' ? 'hg-focused' : '') + ' ' + (getColumnErrors(4).length ? 'hg-cell-error' : '')"
+                <td class="hs-cell hs-cell-text" :data-row="rIdx" data-col="4"
+                    :class="(focusedKey === rIdx + ':4' ? 'hs-focused' : '') + ' ' + (getColumnErrors(4).length ? 'hs-cell-error' : '')"
                     x-show="isColumnVisible(4)"
                     @click="focusCell(rIdx, 4, false)">
-                  <input type="text" class="hg-cell-input" x-model="schemaRows[rIdx].notes"
+                  <input type="text" class="hs-cell-input" x-model="schemaRows[rIdx].notes"
                          @blur="schemaRows[rIdx].notes = $el.value; validateCell(rIdx, 4)">
                 </td>
               </tr>

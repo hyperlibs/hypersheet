@@ -23,7 +23,7 @@
  * Usage:
  *   <div x-data="hypersheet({ rows: 10, cols: 5, sortable: true })"
  *        @keydown.window="handleKey($event)">
- *     <table class="hg-grid">...</table>
+ *     <table class="hs-grid">...</table>
  *   </div>
  *
  * To receive callbacks from grid actions, listen for custom events:
@@ -123,9 +123,9 @@ document.addEventListener('alpine:init', () => {
         const tbody = this.$el.querySelector('tbody');
         if (tbody) {
           new Sortable(tbody, {
-            handle: '.hg-drag-handle',
+            handle: '.hs-drag-handle',
             animation: 150,
-            ghostClass: 'hg-opacity-40',
+            ghostClass: 'hs-opacity-40',
             onEnd: (evt) => {
               this._emit('row-reordered', {
                 from: evt.oldIndex,
@@ -291,8 +291,8 @@ document.addEventListener('alpine:init', () => {
     },
 
     // --- Reactive cell focus check (for Alpine templates) ---
-    // Use: :class="focusedKey === rIdx + ':0' ? 'hg-focused' : ''"
-    // Instead of: :class="isFocused(rIdx, 0) ? 'hg-focused' : ''" (NOT reactive!)
+    // Use: :class="focusedKey === rIdx + ':0' ? 'hs-focused' : ''"
+    // Instead of: :class="isFocused(rIdx, 0) ? 'hs-focused' : ''" (NOT reactive!)
 
     // --- Cell Focus ---
     focusCell(r, c, locked = false) {
@@ -322,7 +322,7 @@ document.addEventListener('alpine:init', () => {
       this.$nextTick(() => {
         const input = this.$el.querySelector(
           `[data-row="${this.activeRow}"][data-col="${this.activeCol}"] input, ` +
-          `[data-row="${this.activeRow}"][data-col="${this.activeCol}"] .hg-cell-input`
+          `[data-row="${this.activeRow}"][data-col="${this.activeCol}"] .hs-cell-input`
         );
         if (input) {
           input.focus();
@@ -337,20 +337,20 @@ document.addEventListener('alpine:init', () => {
 
     exitEdit() {
       this.editMode = false;
-      this.$el.querySelector('.hg-cell-input:focus')?.blur();
+      this.$el.querySelector('.hs-cell-input:focus')?.blur();
     },
 
     // --- Cell Value Access ---
     getCellValue(row, col) {
       const input = this.$el.querySelector(
-        `[data-row="${row}"][data-col="${col}"] .hg-cell-input`
+        `[data-row="${row}"][data-col="${col}"] .hs-cell-input`
       );
       return input ? input.value : '';
     },
 
     setCellValue(row, col, value) {
       const input = this.$el.querySelector(
-        `[data-row="${row}"][data-col="${col}"] .hg-cell-input`
+        `[data-row="${row}"][data-col="${col}"] .hs-cell-input`
       );
       if (input) {
         input.value = value;

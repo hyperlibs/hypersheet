@@ -23,22 +23,22 @@ Hypersheet is a lightweight, hypermedia-driven data grid built on [Alpine.js](ht
 <!-- Use the grid -->
 <div x-data="hypersheet({ rows: 10, cols: 4, sortable: true })"
      @keydown.window="handleKey($event)">
-  <table class="hg-grid">
+  <table class="hs-grid">
     <thead>
-      <tr class="hg-header">
-        <th class="hg-cell hg-w-10"></th>
-        <th class="hg-cell hg-sort-btn" @click="toggleSort(0)">Name <span class="hg-sort-icon">↕</span></th>
-        <th class="hg-cell">Status</th>
-        <th class="hg-cell">Actions</th>
+      <tr class="hs-header">
+        <th class="hs-cell hs-w-10"></th>
+        <th class="hs-cell hs-sort-btn" @click="toggleSort(0)">Name <span class="hs-sort-icon">↕</span></th>
+        <th class="hs-cell">Status</th>
+        <th class="hs-cell">Actions</th>
       </tr>
     </thead>
     <tbody>
-      <tr class="hg-row">
-        <td class="hg-cell hg-drag-handle">⋮⋮</td>
-        <td class="hg-cell" data-row="0" data-col="0">John Doe</td>
-        <td class="hg-cell" data-row="0" data-col="1"><span class="hg-chip hg-chip-active">Active</span></td>
-        <td class="hg-cell" data-row="0" data-col="2">
-          <div class="hg-dropdown-trigger">Actions <span class="hg-dropdown-arrow">▼</span></div>
+      <tr class="hs-row">
+        <td class="hs-cell hs-drag-handle">⋮⋮</td>
+        <td class="hs-cell" data-row="0" data-col="0">John Doe</td>
+        <td class="hs-cell" data-row="0" data-col="1"><span class="hs-chip hs-chip-active">Active</span></td>
+        <td class="hs-cell" data-row="0" data-col="2">
+          <div class="hs-dropdown-trigger">Actions <span class="hs-dropdown-arrow">▼</span></div>
         </td>
       </tr>
     </tbody>

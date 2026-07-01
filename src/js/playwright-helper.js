@@ -111,7 +111,7 @@ class HypersheetTest {
   }
 
   async typeInCell(text) {
-    const input = this.page.locator(`${this.opts.gridSelector} .hg-cell-input:focus`);
+    const input = this.page.locator(`${this.opts.gridSelector} .hs-cell-input:focus`);
     await input.fill(text);
   }
 
@@ -140,7 +140,7 @@ class HypersheetTest {
     return this.page.evaluate(
       ({ row, col, sel }) => {
         const cell = document.querySelector(
-          `${sel} [data-row="${row}"][data-col="${col}"] .hg-cell-input`
+          `${sel} [data-row="${row}"][data-col="${col}"] .hs-cell-input`
         );
         return cell ? cell.value : null;
       },
@@ -149,17 +149,17 @@ class HypersheetTest {
   }
 
   async sortByColumn(colIndex) {
-    const headers = this.page.locator(`${this.opts.gridSelector} .hg-sort-btn`);
+    const headers = this.page.locator(`${this.opts.gridSelector} .hs-sort-btn`);
     await headers.nth(colIndex).click();
     await this.page.waitForTimeout(300);
   }
 
   async reorderRow(fromIndex, toIndex) {
     const handle = this.page.locator(
-      `${this.opts.gridSelector} .hg-drag-handle`
+      `${this.opts.gridSelector} .hs-drag-handle`
     ).nth(fromIndex);
     const target = this.page.locator(
-      `${this.opts.gridSelector} .hg-row`
+      `${this.opts.gridSelector} .hs-row`
     ).nth(toIndex);
     await handle.dragTo(target, { force: true });
     await this.waitForHtmx();
@@ -175,12 +175,12 @@ class HypersheetTest {
   async setChipValue(row, col, optionText) {
     await this.navigateToCell(row, col);
     const chip = this.page.locator(
-      `${this.opts.gridSelector} [data-row="${row}"][data-col="${col}"] .hg-chip`
+      `${this.opts.gridSelector} [data-row="${row}"][data-col="${col}"] .hs-chip`
     );
     await chip.click();
     await this.page.waitForTimeout(200);
     const option = this.page.locator(
-      `${this.opts.gridSelector} .hg-chip-menu .hg-chip-option`,
+      `${this.opts.gridSelector} .hs-chip-menu .hs-chip-option`,
       { hasText: optionText }
     );
     await option.click();

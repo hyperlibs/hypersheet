@@ -20,7 +20,7 @@ spl_autoload_register(function ($class) {
 });
 
 use Hypersheet\Grid;
-use Hypersheet\Database\DatabaseFactory;
+use Hypersheet\Database\dbFactory;
 
 // ---- Configuration ----
 $dataFile = __DIR__ . '/data/Hypersheet_demo.json';
@@ -209,7 +209,7 @@ $rows = $data['users'];
 
 // Build the grid
 $grid = new Grid($columns, $rows);
-$grid->withAuthorization(new \Casbin\Enforcer($modelConf, $policyCsv), $userId);
+$grid->withAuth(new \Casbin\Enforcer($modelConf, $policyCsv), $userId);
 
 // Optional: enable logging
 $logger = new \Hypersheet\CasbinLogger(['enabled' => true, 'log_file' => __DIR__ . '/data/casbin.log']);
@@ -289,7 +289,7 @@ $currentUser = $userDisplay[$userId] ?? $userDisplay['alice'];
     <script>
     // Notify on cell changes
     document.addEventListener('change', function(e) {
-        if (e.target.matches('.hg-cell-input')) {
+        if (e.target.matches('.hs-cell-input')) {
             const cell = e.target.closest('[data-row]');
             if (!cell) return;
             const row = cell.closest('tr');

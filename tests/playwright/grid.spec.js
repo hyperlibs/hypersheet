@@ -26,11 +26,11 @@ test.describe('Hypersheet Core Functionality', () => {
     await grid.waitForGrid();
 
     // Should have a table element
-    const table = await page.locator('[x-data*="Hypersheet"] table.hg-grid');
+    const table = await page.locator('[x-data*="Hypersheet"] table.hs-grid');
     await expect(table).toBeVisible();
 
     // Should have header row
-    const headers = await page.locator('.hg-header th');
+    const headers = await page.locator('.hs-header th');
     await expect(headers).toHaveCount(4); // drag handle + 3 columns
   });
 
@@ -45,20 +45,20 @@ test.describe('Hypersheet Core Functionality', () => {
     await page.keyboard.press('ArrowRight');
     await page.waitForTimeout(100);
 
-    // Verify cell (0, 1) is focused (has hg-focused class)
-    const cell = await page.locator('[data-row="0"][data-col="1"].hg-focused');
+    // Verify cell (0, 1) is focused (has hs-focused class)
+    const cell = await page.locator('[data-row="0"][data-col="1"].hs-focused');
     await expect(cell).toHaveCount(1);
 
     // Move down
     await page.keyboard.press('ArrowDown');
     await page.waitForTimeout(100);
-    const cellDown = await page.locator('[data-row="1"][data-col="1"].hg-focused');
+    const cellDown = await page.locator('[data-row="1"][data-col="1"].hs-focused');
     await expect(cellDown).toHaveCount(1);
 
     // Move up
     await page.keyboard.press('ArrowUp');
     await page.waitForTimeout(100);
-    const cellUp = await page.locator('[data-row="0"][data-col="1"].hg-focused');
+    const cellUp = await page.locator('[data-row="0"][data-col="1"].hs-focused');
     await expect(cellUp).toHaveCount(1);
   });
 
@@ -85,7 +85,7 @@ test.describe('Hypersheet Core Functionality', () => {
     await grid.setChipValue(0, 1, 'Paused');
 
     // Verify the chip text changed
-    const chipText = await page.locator('[data-row="0"][data-col="1"] .hg-chip').textContent();
+    const chipText = await page.locator('[data-row="0"][data-col="1"] .hs-chip').textContent();
     expect(chipText.trim()).toBe('Paused');
   });
 
@@ -114,7 +114,7 @@ test.describe('Hypersheet Core Functionality', () => {
     await page.waitForTimeout(100);
 
     // No input should be focused
-    const focusedInput = await page.locator('.hg-cell-input:focus');
+    const focusedInput = await page.locator('.hs-cell-input:focus');
     await expect(focusedInput).toHaveCount(0);
   });
 
@@ -126,12 +126,12 @@ test.describe('Hypersheet Core Functionality', () => {
 
     await page.keyboard.press('Home');
     await page.waitForTimeout(100);
-    const firstCell = await page.locator('[data-row="0"][data-col="0"].hg-focused');
+    const firstCell = await page.locator('[data-row="0"][data-col="0"].hs-focused');
     await expect(firstCell).toHaveCount(1);
 
     await page.keyboard.press('End');
     await page.waitForTimeout(100);
-    const lastCell = await page.locator('[data-row="0"][data-col="2"].hg-focused');
+    const lastCell = await page.locator('[data-row="0"][data-col="2"].hs-focused');
     await expect(lastCell).toHaveCount(1);
   });
 });
@@ -146,11 +146,11 @@ test.describe('Hypersheet Authorization & Error Handling', () => {
     await grid.waitForGrid();
 
     // Name cell should be locked (Bob can read but not write)
-    const lockedCell = await page.locator('[data-row="0"][data-col="0"].hg-locked');
+    const lockedCell = await page.locator('[data-row="0"][data-col="0"].hs-locked');
     await expect(lockedCell).toHaveCount(1);
 
     // Tier cell should be editable (Bob can write)
-    const editableCell = await page.locator('[data-row="0"][data-col="2"] .hg-cell-input:not([disabled])');
+    const editableCell = await page.locator('[data-row="0"][data-col="2"] .hs-cell-input:not([disabled])');
     await expect(editableCell).toHaveCount(1);
   });
 
@@ -162,7 +162,7 @@ test.describe('Hypersheet Authorization & Error Handling', () => {
     await grid.waitForGrid();
 
     // All columns should be visible (read granted)
-    const cells = await page.locator('.hg-cell:not(.hg-hidden)');
+    const cells = await page.locator('.hs-cell:not(.hs-hidden)');
     const count = await cells.count();
     expect(count).toBeGreaterThan(0);
   });

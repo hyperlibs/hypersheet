@@ -30,7 +30,7 @@ echo $grid->render();
 
 ```php
 $enforcer = new Enforcer('model.conf', 'policy.csv');
-$grid->withAuthorization($enforcer, 'alice');
+$grid->withAuth($enforcer, 'alice');
 
 // Optional: audit logging
 $logger = new CasbinLogger(['enabled' => true, 'log_file' => '/tmp/casbin.log']);
@@ -42,9 +42,9 @@ echo $grid->render();
 ## With Database
 
 ```php
-use Hypersheet\Database\DatabaseFactory;
+use Hypersheet\Database\dbFactory;
 
-$db = DatabaseFactory::create('pgsql');
+$db = dbFactory::create('pgsql');
 $db->connect(['host' => 'localhost', 'database' => 'Hypersheet', 'username' => 'postgres']);
 
 $rows = $db->fetchRows('users', ['name', 'status', 'tier']);

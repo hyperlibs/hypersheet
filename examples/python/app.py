@@ -12,7 +12,7 @@ from fastapi import FastAPI, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from jinja2 import Environment, FileSystemLoader
 
-from hypersheet.engine import HypersheetJinjaEngine
+from hypersheet.engine import hsJinjaEngine
 
 app = FastAPI(title="Hypersheet Python Example")
 
@@ -46,7 +46,7 @@ Path("casbin_model.conf").write_text(MODEL_CONF)
 Path("casbin_policy.csv").write_text(POLICY_CSV)
 
 enforcer = casbin.Enforcer("casbin_model.conf", "casbin_policy.csv")
-grid_engine = HypersheetJinjaEngine(enforcer)
+grid_engine = hsJinjaEngine(enforcer)
 
 # --- Jinja3 Setup ---
 template_dir = Path(__file__).parent / "templates"

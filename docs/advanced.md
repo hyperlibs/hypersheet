@@ -11,7 +11,7 @@ use Hypersheet\Grid;
 
 $enforcer = new Enforcer('model.conf', 'policy.csv');
 $grid = new Grid($columns, $rows);
-$grid->withAuthorization($enforcer, $userId);
+$grid->withAuth($enforcer, $userId);
 
 // Optional: audit logging
 $logger = new CasbinLogger(['enabled' => true]);
@@ -46,7 +46,7 @@ Pass the user ID dynamically:
 
 ```php
 $userId = $_GET['user'] ?? 'anonymous';
-$grid->withAuthorization($enforcer, $userId);
+$grid->withAuth($enforcer, $userId);
 ```
 
 The same grid template renders different editability per user.
@@ -55,34 +55,34 @@ The same grid template renders different editability per user.
 
 ## Cell Decorations / Styles
 
-Hypersheet provides utility CSS classes for cell appearance. All classes use the `hg-` prefix.
+Hypersheet provides utility CSS classes for cell appearance. All classes use the `hs-` prefix.
 
 ### Chip Variants
 
 | Class | Usage |
 |-------|-------|
-| `hg-chip` | Base chip style |
-| `hg-chip-active` | Green — active/success |
-| `hg-chip-paused` | Yellow — warning/pending |
-| `hg-chip-archived` | Gray — inactive/archived |
+| `hs-chip` | Base chip style |
+| `hs-chip-active` | Green — active/success |
+| `hs-chip-paused` | Yellow — warning/pending |
+| `hs-chip-archived` | Gray — inactive/archived |
 
 ### Text Alignment
 
 | Class | Usage |
 |-------|-------|
-| `hg-text-left` | Left-align cell content |
-| `hg-text-center` | Center-align |
-| `hg-text-right` | Right-align (numbers) |
+| `hs-text-left` | Left-align cell content |
+| `hs-text-center` | Center-align |
+| `hs-text-right` | Right-align (numbers) |
 
 ### Cell Sizing
 
 | Class | Width |
 |-------|-------|
-| `hg-w-10` | 2.5rem (drag handle) |
-| `hg-w-20` | 5rem |
-| `hg-w-32` | 8rem |
-| `hg-w-48` | 12rem |
-| `hg-w-64` | 16rem |
+| `hs-w-10` | 2.5rem (drag handle) |
+| `hs-w-20` | 5rem |
+| `hs-w-32` | 8rem |
+| `hs-w-48` | 12rem |
+| `hs-w-64` | 16rem |
 
 ### Conditional Cell Formatting
 
@@ -102,12 +102,12 @@ Formatting state is stored in the `cellFormats` reactive property and emitted vi
 
 ```css
 /* Highlight overdue rows */
-tr.hg-row[data-status="overdue"] .hg-cell {
+tr.hs-row[data-status="overdue"] .hs-cell {
   background-color: #fef2f2;
 }
 
 /* Custom chip color */
-.hg-chip-custom {
+.hs-chip-custom {
   background-color: #ede9fe;
   color: #5b21b6;
 }

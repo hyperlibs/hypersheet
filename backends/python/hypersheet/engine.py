@@ -12,7 +12,7 @@ from markupsafe import Markup, escape
 from jinja2 import pass_context
 
 
-class HypersheetJinjaEngine:
+class hsJinjaEngine:
     """Hypersheet rendering engine for Jinja3 environments.
 
     Register via env.globals["Hypersheet_cell"] = engine.render_cell
@@ -56,7 +56,7 @@ class HypersheetJinjaEngine:
         # Hidden — no read access
         if not can_read:
             return Markup(
-                '<td class="hg-cell hg-hidden">🔒 Hidden</td>'
+                '<td class="hs-cell hs-hidden">🔒 Hidden</td>'
             )
 
         safe_value = escape(str(current_value))
@@ -64,7 +64,7 @@ class HypersheetJinjaEngine:
         # Read-only — no write access (locked)
         if not can_write:
             return Markup(
-                f'<td class="hg-cell hg-locked" title="Locked via Casbin">🔒 {safe_value}</td>'
+                f'<td class="hs-cell hs-locked" title="Locked via Casbin">🔒 {safe_value}</td>'
             )
 
         # Write allowed — render by type
@@ -79,10 +79,10 @@ class HypersheetJinjaEngine:
 
     def _render_text(self, row_id, col_name, value, r, c):
         html = f"""
-<td class="hg-cell hg-cell-text" data-row="{r}" data-col="{c}"
-    :class="isFocused({r}, {c}) ? 'hg-focused' : ''"
+<td class="hs-cell hs-cell-text" data-row="{r}" data-col="{c}"
+    :class="isFocused({r}, {c}) ? 'hs-focused' : ''"
     @click="focusCell({r}, {c}, false)">
-    <input type="text" value="{value}" class="hg-cell-input"
+    <input type="text" value="{value}" class="hs-cell-input"
            hx-put="/api/grid/cell" hx-trigger="blur"
            name="{col_name}" hx-vals='{{"row_id": "{row_id}"}}'>
 </td>"""
@@ -91,31 +91,31 @@ class HypersheetJinjaEngine:
     def _render_chip(self, row_id, col_name, value, r, c):
         lower = value.lower() if hasattr(value, 'lower') else str(value).lower()
         chip_map = {
-            "active": "hg-chip-active",
-            "paused": "hg-chip-pending",
-            "pending": "hg-chip-pending",
-            "archived": "hg-chip-archived",
-            "inactive": "hg-chip-archived",
+            "active": "hs-chip-active",
+            "paused": "hs-chip-pending",
+            "pending": "hs-chip-pending",
+            "archived": "hs-chip-archived",
+            "inactive": "hs-chip-archived",
         }
-        chip_class = chip_map.get(lower, "hg-chip-gray")
+        chip_class = chip_map.get(lower, "hs-chip-gray")
         html = f"""
-<td class="hg-cell hg-cell-chip" data-row="{r}" data-col="{c}"
-    :class="isFocused({r}, {c}) ? 'hg-focused' : ''"
+<td class="hs-cell hs-cell-chip" data-row="{r}" data-col="{c}"
+    :class="isFocused({r}, {c}) ? 'hs-focused' : ''"
     @click="focusCell({r}, {c}, false)"
     x-data="{{ open: false }}">
-    <div @click="open = !open" class="hg-cursor-pointer hg-select-none">
-        <span class="hg-chip {chip_class}">{value}</span>
+    <div @click="open = !open" class="hs-cursor-pointer hs-select-none">
+        <span class="hs-chip {chip_class}">{value}</span>
     </div>
-    <div class="hg-chip-menu" x-show="open" @click.away="open = false" x-transition>
-        <div class="hg-chip-option"
+    <div class="hs-chip-menu" x-show="open" @click.away="open = false" x-transition>
+        <div class="hs-chip-option"
              hx-put="/api/grid/cell"
              hx-vals='{{"row_id": "{row_id}", "{col_name}": "Active"}}'
              @click="open = false">Active</div>
-        <div class="hg-chip-option"
+        <div class="hs-chip-option"
              hx-put="/api/grid/cell"
              hx-vals='{{"row_id": "{row_id}", "{col_name}": "Paused"}}'
              @click="open = false">Paused</div>
-        <div class="hg-chip-option"
+        <div class="hs-chip-option"
              hx-put="/api/grid/cell"
              hx-vals='{{"row_id": "{row_id}", "{col_name}": "Archived"}}'
              @click="open = false">Archived</div>
@@ -128,20 +128,20 @@ class HypersheetJinjaEngine:
         for opt in options:
             safe_opt = escape(str(opt))
             items += f"""
-        <div class="hg-dropdown-item"
+        <div class="hs-dropdown-item"
              hx-put="/api/grid/cell"
              hx-vals='{{"row_id": "{row_id}", "{col_name}": "{safe_opt}"}}'
              @click="open = false">{safe_opt}</div>"""
         html = f"""
-<td class="hg-cell hg-cell-dropdown" data-row="{r}" data-col="{c}"
-    :class="isFocused({r}, {c}) ? 'hg-focused' : ''"
+<td class="hs-cell hs-cell-dropdown" data-row="{r}" data-col="{c}"
+    :class="isFocused({r}, {c}) ? 'hs-focused' : ''"
     @click="focusCell({r}, {c}, false)"
     x-data="{{ open: false }}">
-    <div @click="open = !open" class="hg-dropdown-trigger">
+    <div @click="open = !open" class="hs-dropdown-trigger">
         <span>{value}</span>
-        <span class="hg-dropdown-arrow">▼</span>
+        <span class="hs-dropdown-arrow">▼</span>
     </div>
-    <div class="hg-dropdown-menu" x-show="open" @click.away="open = false" x-transition>
+    <div class="hs-dropdown-menu" x-show="open" @click.away="open = false" x-transition>
         {items}
     </div>
 </td>"""
@@ -158,10 +158,10 @@ class HypersheetJinjaEngine:
               hx-put="/api/grid/task" hx-trigger="click"
               hx-vals='{{"row_id": "{row_id}", "task_id": "{task_id}"}}'> {task_label}</label>"""
         html = f"""
-<td class="hg-cell" data-row="{r}" data-col="{c}"
-    :class="isFocused({r}, {c}) ? 'hg-focused' : ''"
+<td class="hs-cell" data-row="{r}" data-col="{c}"
+    :class="isFocused({r}, {c}) ? 'hs-focused' : ''"
     @click="focusCell({r}, {c}, false)">
-    <div class="hg-checklist">{items}</div>
+    <div class="hs-checklist">{items}</div>
 </td>"""
         return Markup(html)
 
@@ -178,23 +178,23 @@ class HypersheetJinjaEngine:
         grid_html += ', cols: '
         grid_html += str(len(columns))
         grid_html += ', sortable: true'
-        grid_html += '})" @keydown.window="handleKey($event)" class="hg-overflow-auto">'
-        grid_html += '<table class="hg-grid hg-border-collapse">'
+        grid_html += '})" @keydown.window="handleKey($event)" class="hs-overflow-auto">'
+        grid_html += '<table class="hs-grid hs-border-collapse">'
 
         # Header
-        grid_html += '<thead><tr class="hg-header">'
-        grid_html += '<th class="hg-cell hg-w-10"></th>'
+        grid_html += '<thead><tr class="hs-header">'
+        grid_html += '<th class="hs-cell hs-w-10"></th>'
         for idx, col in enumerate(columns):
             label = escape(str(col.get("label", col.get("name", ""))))
-            grid_html += f'<th class="hg-cell hg-sort-btn" @click="toggleSort({idx})">{label} <span class="hg-sort-icon">↕</span></th>'
+            grid_html += f'<th class="hs-cell hs-sort-btn" @click="toggleSort({idx})">{label} <span class="hs-sort-icon">↕</span></th>'
         grid_html += '</tr></thead>'
 
         # Body
         grid_html += '<tbody hx-post="/api/grid/reorder" hx-trigger="row-reordered">'
         for r_idx, row in enumerate(rows):
             row_id = escape(str(row.get("id", r_idx)))
-            grid_html += f'<tr class="hg-row" data-id="{row_id}">'
-            grid_html += '<td class="hg-cell hg-drag-handle">⋮⋮</td>'
+            grid_html += f'<tr class="hs-row" data-id="{row_id}">'
+            grid_html += '<td class="hs-cell hs-drag-handle">⋮⋮</td>'
             for c_idx, col in enumerate(columns):
                 col_name = col.get("name", f"col_{c_idx}")
                 cell_type = col.get("type", "text")
@@ -212,11 +212,11 @@ class HypersheetJinjaEngine:
 
     def render_grid_header(self, columns):
         """Render just the <thead> fragment (for htmx partial swaps)."""
-        html = '<thead><tr class="hg-header">'
-        html += '<th class="hg-cell hg-w-10"></th>'
+        html = '<thead><tr class="hs-header">'
+        html += '<th class="hs-cell hs-w-10"></th>'
         for idx, col in enumerate(columns):
             label = escape(str(col.get("label", col.get("name", ""))))
-            html += f'<th class="hg-cell hg-sort-btn" @click="toggleSort({idx})">{label} <span class="hg-sort-icon">↕</span></th>'
+            html += f'<th class="hs-cell hs-sort-btn" @click="toggleSort({idx})">{label} <span class="hs-sort-icon">↕</span></th>'
         html += '</tr></thead>'
         return Markup(html)
 
@@ -225,8 +225,8 @@ class HypersheetJinjaEngine:
         html = '<tbody hx-post="/api/grid/reorder" hx-trigger="row-reordered">'
         for r_idx, row in enumerate(rows):
             row_id = escape(str(row.get("id", r_idx)))
-            html += f'<tr class="hg-row" data-id="{row_id}">'
-            html += '<td class="hg-cell hg-drag-handle">⋮⋮</td>'
+            html += f'<tr class="hs-row" data-id="{row_id}">'
+            html += '<td class="hs-cell hs-drag-handle">⋮⋮</td>'
             for c_idx, col in enumerate(columns):
                 col_name = col.get("name", f"col_{c_idx}")
                 cell_type = col.get("type", "text")

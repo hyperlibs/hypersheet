@@ -3,7 +3,7 @@ Hypersheet Casbin Logger — optional authorization logging.
 
 Usage:
     logger = CasbinLogger(enabled=True, min_level="info")
-    grid_engine = HypersheetJinjaEngine(enforcer, logger=logger)
+    grid_engine = hsJinjaEngine(enforcer, logger=logger)
 """
 
 import json

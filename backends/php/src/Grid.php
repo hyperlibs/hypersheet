@@ -21,14 +21,14 @@ class Grid
     }
 
     /** Enable Casbin authorization. If omitted, all cells are editable. */
-    public function withAuthorization(Enforcer $enforcer, string $userId): self
+    public function withAuth(Enforcer $enforcer, string $userId): self
     {
         $this->enforcer = $enforcer;
         $this->userId = $userId;
         return $this;
     }
 
-    /** Enable optional Casbin audit logging. Requires withAuthorization(). */
+    /** Enable optional Casbin audit logging. Requires withAuth(). */
     public function withLogger(CasbinLogger $logger): self
     {
         $this->logger = $logger;
@@ -65,12 +65,12 @@ class Grid
         $canWrite = $this->canAccess($colName, 'write');
 
         if (!$canRead) {
-            return '<td class="hg-cell hg-hidden">🔒 Hidden</td>';
+            return '<td class="hs-cell hs-hidden">🔒 Hidden</td>';
         }
 
         if (!$canWrite) {
             $safe = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
-            return "<td class=\"hg-cell hg-locked\">🔒 {$safe}</td>";
+            return "<td class=\"hs-cell hs-locked\">🔒 {$safe}</td>";
         }
 
         return match ($type) {
@@ -88,10 +88,10 @@ class Grid
         $colSafe = htmlspecialchars($colName, ENT_QUOTES, 'UTF-8');
         $rowSafe = htmlspecialchars($rowId, ENT_QUOTES, 'UTF-8');
         return <<<HTML
-<td class="hg-cell hg-cell-text" data-row="{$r}" data-col="{$c}"
-    :class="isFocused({$r}, {$c}) ? 'hg-focused' : ''"
+<td class="hs-cell hs-cell-text" data-row="{$r}" data-col="{$c}"
+    :class="isFocused({$r}, {$c}) ? 'hs-focused' : ''"
     @click="focusCell({$r}, {$c}, false)">
-    <input type="text" value="{$safe}" class="hg-cell-input"
+    <input type="text" value="{$safe}" class="hs-cell-input"
            hx-put="/api/grid/cell" hx-trigger="blur"
            name="{$colSafe}" hx-vals='{"row_id": "{$rowSafe}"}'>
 </td>
@@ -104,27 +104,27 @@ HTML;
         $colSafe = htmlspecialchars($colName, ENT_QUOTES, 'UTF-8');
         $rowSafe = htmlspecialchars($rowId, ENT_QUOTES, 'UTF-8');
         $chipClass = match (strtolower((string)$value)) {
-            'active' => 'hg-chip-active',
-            'paused', 'pending' => 'hg-chip-pending',
-            'archived', 'inactive' => 'hg-chip-archived',
-            default => 'hg-chip-gray',
+            'active' => 'hs-chip-active',
+            'paused', 'pending' => 'hs-chip-pending',
+            'archived', 'inactive' => 'hs-chip-archived',
+            default => 'hs-chip-gray',
         };
         return <<<HTML
-<td class="hg-cell hg-cell-chip" data-row="{$r}" data-col="{$c}"
-    :class="isFocused({$r}, {$c}) ? 'hg-focused' : ''"
+<td class="hs-cell hs-cell-chip" data-row="{$r}" data-col="{$c}"
+    :class="isFocused({$r}, {$c}) ? 'hs-focused' : ''"
     @click="focusCell({$r}, {$c}, false)"
     x-data="{ open: false }">
-    <div @click="open = !open" class="hg-cursor-pointer hg-select-none">
-        <span class="hg-chip {$chipClass}">{$safe}</span>
+    <div @click="open = !open" class="hs-cursor-pointer hs-select-none">
+        <span class="hs-chip {$chipClass}">{$safe}</span>
     </div>
-    <div class="hg-chip-menu" x-show="open" @click.away="open = false" x-transition>
-        <div class="hg-chip-option"
+    <div class="hs-chip-menu" x-show="open" @click.away="open = false" x-transition>
+        <div class="hs-chip-option"
              hx-put="/api/grid/cell" hx-vals='{"row_id": "{$rowSafe}", "{$colSafe}": "Active"}'
              @click="open = false">Active</div>
-        <div class="hg-chip-option"
+        <div class="hs-chip-option"
              hx-put="/api/grid/cell" hx-vals='{"row_id": "{$rowSafe}", "{$colSafe}": "Paused"}'
              @click="open = false">Paused</div>
-        <div class="hg-chip-option"
+        <div class="hs-chip-option"
              hx-put="/api/grid/cell" hx-vals='{"row_id": "{$rowSafe}", "{$colSafe}": "Archived"}'
              @click="open = false">Archived</div>
     </div>
@@ -141,21 +141,21 @@ HTML;
         foreach ($options as $opt) {
             $optSafe = htmlspecialchars((string)$opt, ENT_QUOTES, 'UTF-8');
             $items .= <<<ITEM
-<div class="hg-dropdown-item"
+<div class="hs-dropdown-item"
      hx-put="/api/grid/cell" hx-vals='{"row_id": "{$rowSafe}", "{$colSafe}": "{$optSafe}"}'
      @click="open = false">{$optSafe}</div>
 ITEM;
         }
         return <<<HTML
-<td class="hg-cell hg-cell-dropdown" data-row="{$r}" data-col="{$c}"
-    :class="isFocused({$r}, {$c}) ? 'hg-focused' : ''"
+<td class="hs-cell hs-cell-dropdown" data-row="{$r}" data-col="{$c}"
+    :class="isFocused({$r}, {$c}) ? 'hs-focused' : ''"
     @click="focusCell({$r}, {$c}, false)"
     x-data="{ open: false }">
-    <div @click="open = !open" class="hg-dropdown-trigger">
+    <div @click="open = !open" class="hs-dropdown-trigger">
         <span>{$safe}</span>
-        <span class="hg-dropdown-arrow">▼</span>
+        <span class="hs-dropdown-arrow">▼</span>
     </div>
-    <div class="hg-dropdown-menu" x-show="open" @click.away="open = false" x-transition>
+    <div class="hs-dropdown-menu" x-show="open" @click.away="open = false" x-transition>
         {$items}
     </div>
 </td>
@@ -168,8 +168,8 @@ HTML;
         $rowSafe = htmlspecialchars($rowId, ENT_QUOTES, 'UTF-8');
         $checked = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'checked' : '';
         return <<<HTML
-<td class="hg-cell hg-cell-checkbox" data-row="{$r}" data-col="{$c}"
-    :class="isFocused({$r}, {$c}) ? 'hg-focused' : ''"
+<td class="hs-cell hs-cell-checkbox" data-row="{$r}" data-col="{$c}"
+    :class="isFocused({$r}, {$c}) ? 'hs-focused' : ''"
     @click="focusCell({$r}, {$c}, false)">
     <input type="checkbox" {$checked}
            hx-put="/api/grid/cell" hx-trigger="click"
@@ -194,21 +194,21 @@ HTML;
 ITEM;
         }
         return <<<HTML
-<td class="hg-cell" data-row="{$r}" data-col="{$c}"
-    :class="isFocused({$r}, {$c}) ? 'hg-focused' : ''"
+<td class="hs-cell" data-row="{$r}" data-col="{$c}"
+    :class="isFocused({$r}, {$c}) ? 'hs-focused' : ''"
     @click="focusCell({$r}, {$c}, false)">
-    <div class="hg-checklist">{$items}</div>
+    <div class="hs-checklist">{$items}</div>
 </td>
 HTML;
     }
 
     public function renderHeader(): string
     {
-        $html = '<thead><tr class="hg-header">';
-        $html .= '<th class="hg-cell hg-w-10"></th>';
+        $html = '<thead><tr class="hs-header">';
+        $html .= '<th class="hs-cell hs-w-10"></th>';
         foreach ($this->columns as $idx => $col) {
             $name = htmlspecialchars((string)($col['label'] ?? $col['name'] ?? ''), ENT_QUOTES, 'UTF-8');
-            $html .= "<th class=\"hg-cell hg-sort-btn\" @click=\"toggleSort({$idx})\">{$name} <span class=\"hg-sort-icon\">↕</span></th>";
+            $html .= "<th class=\"hs-cell hs-sort-btn\" @click=\"toggleSort({$idx})\">{$name} <span class=\"hs-sort-icon\">↕</span></th>";
         }
         $html .= '</tr></thead>';
         return $html;
@@ -219,8 +219,8 @@ HTML;
         $html = '<tbody hx-post="/api/grid/reorder" hx-trigger="row-reordered">';
         foreach ($this->rows as $rIdx => $row) {
             $rowId = (string)($row['id'] ?? $rIdx);
-            $html .= '<tr class="hg-row" data-id="' . htmlspecialchars($rowId, ENT_QUOTES, 'UTF-8') . '">';
-            $html .= '<td class="hg-cell hg-drag-handle">⋮⋮</td>';
+            $html .= '<tr class="hs-row" data-id="' . htmlspecialchars($rowId, ENT_QUOTES, 'UTF-8') . '">';
+            $html .= '<td class="hs-cell hs-drag-handle">⋮⋮</td>';
             foreach ($this->columns as $cIdx => $col) {
                 $colName = $col['name'] ?? "col_{$cIdx}";
                 $type = $col['type'] ?? 'text';
@@ -242,8 +242,8 @@ HTML;
             'sortable' => true,
         ], JSON_THROW_ON_ERROR);
         return <<<HTML
-<div x-data="Hypersheet({$config})" @keydown.window="handleKey($event)" class="hg-overflow-auto">
-    <table class="hg-grid hg-border-collapse">
+<div x-data="Hypersheet({$config})" @keydown.window="handleKey($event)" class="hs-overflow-auto">
+    <table class="hs-grid hs-border-collapse">
         {$this->renderHeader()}
         {$this->renderBody()}
     </table>

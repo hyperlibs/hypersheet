@@ -19,7 +19,7 @@ test.describe('Error Resilience', () => {
     await grid.waitForGrid();
     await grid.setCellText(0, 0, 'A'.repeat(10000));
     await grid.navigateToCell(1, 0);
-    const cell2 = await page.locator('[data-row="1"][data-col="0"].hg-focused');
+    const cell2 = await page.locator('[data-row="1"][data-col="0"].hs-focused');
     await expect(cell2).toHaveCount(1);
     await grid.expectNoErrors();
   });

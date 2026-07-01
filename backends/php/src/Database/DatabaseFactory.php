@@ -2,7 +2,7 @@
 
 namespace Hypersheet\Database;
 
-class DatabaseFactory
+class dbFactory
 {
     public static function create(string $driver): DatabaseInterface
     {

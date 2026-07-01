@@ -55,19 +55,19 @@ echo $grid->render();
 **Controller:**
 ```php
 use Hypersheet\Grid;
-use Hypersheet\Database\DatabaseFactory;
+use Hypersheet\Database\dbFactory;
 
 class GridController extends Controller
 {
     public function index(Request $request)
     {
-        $db = DatabaseFactory::create('pgsql');
+        $db = dbFactory::create('pgsql');
         $db->connect(config('database.connections.pgsql'));
         $rows = $db->fetchRows('users', ['name', 'email', 'status', 'tier']);
 
         $enforcer = $request->user()?->casbinEnforcer();
         $grid = new Grid($columns, $rows);
-        if ($enforcer) $grid->withAuthorization($enforcer, $request->user()->id);
+        if ($enforcer) $grid->withAuth($enforcer, $request->user()->id);
 
         return view('grid', ['gridHtml' => $grid->render()]);
     }
@@ -380,7 +380,7 @@ export default function GridPage() {
       <Script src="https://unpkg.com/hypersheet@0.1/dist/hypersheet.js" />
       <link rel="stylesheet" href="https://unpkg.com/hypersheet@0.1/dist/hypersheet.css" />
       <div x-data="hypersheet({ rows: 5, cols: 3 })" @keydown.window="handleKey($event)">
-        <table class="hg-grid">{/* ... */}</table>
+        <table class="hs-grid">{/* ... */}</table>
       </div>
     </>
   );

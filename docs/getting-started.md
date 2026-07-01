@@ -35,33 +35,33 @@ The simplest Hypersheet — a plain HTML table with Alpine.js sorting and row re
 ```html
 <div x-data="hypersheet({ rows: 3, cols: 3, sortable: true })"
      @keydown.window="handleKey($event)">
-  <table class="hg-grid">
+  <table class="hs-grid">
     <thead>
-      <tr class="hg-header">
-        <th class="hg-cell hg-w-10"></th>
-        <th class="hg-cell hg-sort-btn" @click="toggleSort(0)">Name <span class="hg-sort-icon">↕</span></th>
-        <th class="hg-cell hg-sort-btn" @click="toggleSort(1)">Role <span class="hg-sort-icon">↕</span></th>
-        <th class="hg-cell hg-sort-btn" @click="toggleSort(2)">Status <span class="hg-sort-icon">↕</span></th>
+      <tr class="hs-header">
+        <th class="hs-cell hs-w-10"></th>
+        <th class="hs-cell hs-sort-btn" @click="toggleSort(0)">Name <span class="hs-sort-icon">↕</span></th>
+        <th class="hs-cell hs-sort-btn" @click="toggleSort(1)">Role <span class="hs-sort-icon">↕</span></th>
+        <th class="hs-cell hs-sort-btn" @click="toggleSort(2)">Status <span class="hs-sort-icon">↕</span></th>
       </tr>
     </thead>
     <tbody>
-      <tr class="hg-row">
-        <td class="hg-cell hg-drag-handle">⋮⋮</td>
-        <td class="hg-cell">Alice</td>
-        <td class="hg-cell">Admin</td>
-        <td class="hg-cell"><span class="hg-chip hg-chip-active">Active</span></td>
+      <tr class="hs-row">
+        <td class="hs-cell hs-drag-handle">⋮⋮</td>
+        <td class="hs-cell">Alice</td>
+        <td class="hs-cell">Admin</td>
+        <td class="hs-cell"><span class="hs-chip hs-chip-active">Active</span></td>
       </tr>
-      <tr class="hg-row">
-        <td class="hg-cell hg-drag-handle">⋮⋮</td>
-        <td class="hg-cell">Bob</td>
-        <td class="hg-cell">Editor</td>
-        <td class="hg-cell"><span class="hg-chip hg-chip-paused">Paused</span></td>
+      <tr class="hs-row">
+        <td class="hs-cell hs-drag-handle">⋮⋮</td>
+        <td class="hs-cell">Bob</td>
+        <td class="hs-cell">Editor</td>
+        <td class="hs-cell"><span class="hs-chip hs-chip-paused">Paused</span></td>
       </tr>
-      <tr class="hg-row">
-        <td class="hg-cell hg-drag-handle">⋮⋮</td>
-        <td class="hg-cell">Carol</td>
-        <td class="hg-cell">Viewer</td>
-        <td class="hg-cell"><span class="hg-chip hg-chip-archived">Archived</span></td>
+      <tr class="hs-row">
+        <td class="hs-cell hs-drag-handle">⋮⋮</td>
+        <td class="hs-cell">Carol</td>
+        <td class="hs-cell">Viewer</td>
+        <td class="hs-cell"><span class="hs-chip hs-chip-archived">Archived</span></td>
       </tr>
     </tbody>
   </table>
@@ -92,9 +92,9 @@ Define columns declaratively. Each column specifies its field, title, cell type,
     },
     { field: 'status',  title: 'Status', type: 'chip',
       options: [
-        { value: 'active',   label: 'Active',   chipClass: 'hg-chip-active' },
-        { value: 'paused',   label: 'Paused',   chipClass: 'hg-chip-paused' },
-        { value: 'archived', label: 'Archived', chipClass: 'hg-chip-archived' }
+        { value: 'active',   label: 'Active',   chipClass: 'hs-chip-active' },
+        { value: 'paused',   label: 'Paused',   chipClass: 'hs-chip-paused' },
+        { value: 'archived', label: 'Archived', chipClass: 'hs-chip-archived' }
       ]
     }
   ]
@@ -227,9 +227,9 @@ Combine config-driven columns with Alpine.js `x-model` bindings for two-way data
 ### Basic Editable Cells
 
 ```html
-<td class="hg-cell" :data-row="rIdx" data-col="0"
-    :class="focusedKey === rIdx + ':0' ? 'hg-focused' : ''">
-  <input class="hg-cell-input" type="text"
+<td class="hs-cell" :data-row="rIdx" data-col="0"
+    :class="focusedKey === rIdx + ':0' ? 'hs-focused' : ''">
+  <input class="hs-cell-input" type="text"
          x-model="rows[rIdx].name"
          @focus="focusCell(rIdx, 0, false)"
          name="name">
@@ -239,16 +239,16 @@ Combine config-driven columns with Alpine.js `x-model` bindings for two-way data
 ### Editable Dropdown
 
 ```html
-<td class="hg-cell hg-cell-dropdown" :data-row="rIdx" data-col="1"
-    :class="focusedKey === rIdx + ':1' ? 'hg-focused' : ''"
+<td class="hs-cell hs-cell-dropdown" :data-row="rIdx" data-col="1"
+    :class="focusedKey === rIdx + ':1' ? 'hs-focused' : ''"
     x-data="{ open: false }">
-  <div @click="open = !open" class="hg-dropdown-trigger">
+  <div @click="open = !open" class="hs-dropdown-trigger">
     <span x-text="rows[rIdx].role || 'Select...'"></span>
-    <span class="hg-dropdown-arrow">▼</span>
+    <span class="hs-dropdown-arrow">▼</span>
   </div>
-  <div class="hg-dropdown-menu" x-show="open" @click.away="open = false">
+  <div class="hs-dropdown-menu" x-show="open" @click.away="open = false">
     <template x-for="opt in getColumnOptions(1)" :key="opt.value">
-      <div class="hg-dropdown-item"
+      <div class="hs-dropdown-item"
            @click="rows[rIdx].role = opt.value; open = false"
            x-text="opt.label"></div>
     </template>
@@ -259,13 +259,13 @@ Combine config-driven columns with Alpine.js `x-model` bindings for two-way data
 ### Editable Chip
 
 ```html
-<td class="hg-cell" :data-row="rIdx" data-col="2"
-    :class="focusedKey === rIdx + ':2' ? 'hg-focused' : ''">
-  <span class="hg-chip"
+<td class="hs-cell" :data-row="rIdx" data-col="2"
+    :class="focusedKey === rIdx + ':2' ? 'hs-focused' : ''">
+  <span class="hs-chip"
         :class="{
-          'hg-chip-active':   rows[rIdx].status === 'active',
-          'hg-chip-paused':   rows[rIdx].status === 'paused',
-          'hg-chip-archived': rows[rIdx].status === 'archived'
+          'hs-chip-active':   rows[rIdx].status === 'active',
+          'hs-chip-paused':   rows[rIdx].status === 'paused',
+          'hs-chip-archived': rows[rIdx].status === 'archived'
         }">
   </span>
 </td>
@@ -276,7 +276,7 @@ Combine config-driven columns with Alpine.js `x-model` bindings for two-way data
 Add `hx-*` attributes for server-side saves:
 
 ```html
-<input class="hg-cell-input" type="text"
+<input class="hs-cell-input" type="text"
        x-model="rows[rIdx].name"
        hx-put="/api/grid/cell"
        hx-trigger="change"

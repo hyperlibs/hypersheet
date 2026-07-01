@@ -1,72 +1,72 @@
 # Hypersheet CSS Reference
 
-Hypersheet uses a Tailwind-like utility framework with the `hg-` prefix.
+Hypersheet uses a Tailwind-like utility framework with the `hs-` prefix.
 
 ## Grid Layout
 
 | Class | Purpose |
 |-------|---------|
-| `hg-grid` | Table element |
-| `hg-header` | Header row styling |
-| `hg-row` | Table row |
-| `hg-cell` | Table cell |
-| `hg-cell-input` | Cell input element |
-| `hg-drag-handle` | Row drag handle |
+| `hs-grid` | Table element |
+| `hs-header` | Header row styling |
+| `hs-row` | Table row |
+| `hs-cell` | Table cell |
+| `hs-cell-input` | Cell input element |
+| `hs-drag-handle` | Row drag handle |
 
 ## Cell Types
 
 | Class | Purpose |
 |-------|---------|
-| `hg-cell-text` | Text input cell |
-| `hg-cell-chip` | Chip/status cell |
-| `hg-cell-dropdown` | Dropdown cell |
-| `hg-cell-checkbox` | Checkbox cell |
+| `hs-cell-text` | Text input cell |
+| `hs-cell-chip` | Chip/status cell |
+| `hs-cell-dropdown` | Dropdown cell |
+| `hs-cell-checkbox` | Checkbox cell |
 
 ## States
 
 | Class | Purpose |
 |-------|---------|
-| `hg-focused` | Focused cell (blue ring) |
-| `hg-selected` | Selected cell |
-| `hg-editing` | Edit mode |
-| `hg-locked` | Read-only (Casbin) |
-| `hg-hidden` | Hidden (Casbin) |
+| `hs-focused` | Focused cell (blue ring) |
+| `hs-selected` | Selected cell |
+| `hs-editing` | Edit mode |
+| `hs-locked` | Read-only (Casbin) |
+| `hs-hidden` | Hidden (Casbin) |
 
 ## Chips
 
 | Class | Purpose |
 |-------|---------|
-| `hg-chip` | Base chip |
-| `hg-chip-active` | Green chip |
-| `hg-chip-archived` | Red chip |
-| `hg-chip-pending` | Yellow chip |
-| `hg-chip-gray` | Default chip |
-| `hg-chip-menu` | Chip dropdown menu |
-| `hg-chip-option` | Chip menu option |
+| `hs-chip` | Base chip |
+| `hs-chip-active` | Green chip |
+| `hs-chip-archived` | Red chip |
+| `hs-chip-pending` | Yellow chip |
+| `hs-chip-gray` | Default chip |
+| `hs-chip-menu` | Chip dropdown menu |
+| `hs-chip-option` | Chip menu option |
 
 ## Dropdown
 
 | Class | Purpose |
 |-------|---------|
-| `hg-dropdown-trigger` | Dropdown display |
-| `hg-dropdown-arrow` | Arrow indicator |
-| `hg-dropdown-menu` | Dropdown popup |
-| `hg-dropdown-item` | Dropdown option |
+| `hs-dropdown-trigger` | Dropdown display |
+| `hs-dropdown-arrow` | Arrow indicator |
+| `hs-dropdown-menu` | Dropdown popup |
+| `hs-dropdown-item` | Dropdown option |
 
 ## Checklist
 
 | Class | Purpose |
 |-------|---------|
-| `hg-checklist` | Checklist container |
+| `hs-checklist` | Checklist container |
 
 ## Utility Classes
 
-Spacing: `hg-p-{1-4}`, `hg-gap-{1-3}`
-Flex: `hg-flex`, `hg-flex-col`, `hg-items-center`, `hg-justify-between`
-Text: `hg-text-{xs,sm,base,lg}`, `hg-font-{normal,medium,semibold,bold}`
-Colors: `hg-bg-{color}`, `hg-text-{color}`
-Borders: `hg-border`, `hg-border-b`, `hg-rounded{-md,-lg,-full}`
-Position: `hg-relative`, `hg-absolute`, `hg-z-{10,20,30}`
-Shadow: `hg-shadow{-md,-lg,-xl}`
-Ring: `hg-ring-2`
-Cursor: `hg-cursor-pointer`, `hg-cursor-grab`, `hg-cursor-not-allowed`
+Spacing: `hs-p-{1-4}`, `hs-gap-{1-3}`
+Flex: `hs-flex`, `hs-flex-col`, `hs-items-center`, `hs-justify-between`
+Text: `hs-text-{xs,sm,base,lg}`, `hs-font-{normal,medium,semibold,bold}`
+Colors: `hs-bg-{color}`, `hs-text-{color}`
+Borders: `hs-border`, `hs-border-b`, `hs-rounded{-md,-lg,-full}`
+Position: `hs-relative`, `hs-absolute`, `hs-z-{10,20,30}`
+Shadow: `hs-shadow{-md,-lg,-xl}`
+Ring: `hs-ring-2`
+Cursor: `hs-cursor-pointer`, `hs-cursor-grab`, `hs-cursor-not-allowed`
