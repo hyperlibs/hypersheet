@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    name: JS Frontend (bun + Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - name: Install Playwright browsers
+        run: bunx playwright install chromium
+      - name: Start test server & run tests
+        run: |
+          bun tests/playwright/test-server.js &
+          sleep 2
+          bun run test
+        env:
+          CI: true
+
+  backend-php:
+    name: PHP Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: json, pdo, sqlite3
+      - run: php -v
+      - name: Validate composer.json
+        run: composer validate --strict
+        working-directory: backends/php
+      - name: Install dependencies
+        run: composer install --no-interaction
+        working-directory: backends/php
+
+  backend-python:
+    name: Python Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -c "import sys; print(sys.version)"
+      - name: Install + validate
+        run: |
+          pip install -e .
+        working-directory: backends/python
+      - name: Check import
+        run: python -c "from hypergrid import HyperGridJinjaEngine, CasbinLogger; print('OK')"
+
+  backend-go:
+    name: Go Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+      - run: go version
+      - name: Build
+        run: go build ./...
+        working-directory: backends/go
+
+  backend-rust:
+    name: Rust Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build
+        run: cargo build --verbose
+        working-directory: backends/rust

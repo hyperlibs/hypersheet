@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HyperGrid Demo</title>
+  <script defer src="../src/js/hypergrid.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <link rel="stylesheet" href="../src/css/hypergrid.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f3f4f6; color: #1f2937; padding: 2rem; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 2rem; }
+    header h1 { font-size: 1.75rem; font-weight: 700; }
+    header p { color: #6b7280; margin-top: 0.25rem; font-size: 0.875rem; }
+    .controls { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+    .controls button { padding: 0.375rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: white; cursor: pointer; font-size: 0.8125rem; transition: all 0.15s; }
+    .controls button:hover { background: #f9fafb; border-color: #9ca3af; }
+    .controls button.primary { background: #3b82f6; color: white; border-color: #3b82f6; }
+    .controls button.primary:hover { background: #2563eb; }
+    .controls button.danger { color: #dc2626; border-color: #fca5a5; }
+    .controls button.danger:hover { background: #fef2f2; }
+    .grid-wrapper { background: white; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
+    .grid-wrapper .hg-cell { border-color: #e5e7eb; font-size: 0.875rem; }
+    .grid-wrapper .hg-header .hg-cell { background: #f9fafb; border-bottom: 2px solid #e5e7eb; padding: 0.75rem 0.5rem; font-size: 0.75rem; }
+    .legend { display: flex; gap: 1.5rem; justify-content: center; margin: 1rem 0; flex-wrap: wrap; font-size: 0.8125rem; }
+    .legend kbd { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 0.25rem; padding: 0.125rem 0.375rem; font-size: 0.6875rem; font-family: inherit; }
+    .legend .key-group { display: flex; align-items: center; gap: 0.25rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .badge { font-size: 0.625rem; font-weight: 600; text-transform: uppercase; padding: 0.125rem 0.5rem; border-radius: 9999px; }
+    .badge-core { background: #dbeafe; color: #1e40af; }
+    .badge-format { background: #fce7f3; color: #9d174d; }
+    .status-bar { display: flex; gap: 1rem; justify-content: center; font-size: 0.75rem; padding: 0.75rem; background: #f9fafb; border-radius: 0.5rem; margin-top: 1rem; color: #6b7280; flex-wrap: wrap; }
+    .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 0.75rem 1.25rem; border-radius: 0.5rem; background: #1f2937; color: white; font-size: 0.875rem; opacity: 0; transform: translateY(1rem); transition: all 0.3s; z-index: 50; pointer-events: none; max-width: 24rem; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .tab-bar { display: flex; border-bottom: 1px solid #e5e7eb; margin-bottom: 1.5rem; }
+    .tab { padding: 0.75rem 1.25rem; cursor: pointer; font-size: 0.875rem; border-bottom: 2px solid transparent; transition: all 0.15s; color: #6b7280; }
+    .tab:hover { color: #374151; }
+    .tab.active { color: #3b82f6; border-bottom-color: #3b82f6; font-weight: 600; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .grid-info { font-size: 0.75rem; color: #9ca3af; margin-left: auto; }
+    @media (max-width: 768px) { body { padding: 1rem; } .controls { flex-direction: column; align-items: stretch; } }
+  </style>
+</head>
+<body>
+
+<div class="container" x-data="demoApp()" x-init="init()"
+     @grid-insert-row.window="onInsert($event)"
+     @grid-clear-cell.window="onClearCell($event)"
+     @grid-clear-row.window="onClearRow($event)"
+     @grid-save.window="onSave($event)"
+     @grid-cell-format.window="onFormat($event)"
+     @row-reordered.window="onReorder($event)"
+     @grid-sort.window="onSort($event)">
+  <header>
+    <h1>⚡ HyperGrid</h1>
+    <p>Alpine.js + htmx spreadsheet grid. Use keyboard shortcuts for navigation, editing, and formatting.</p>
+  </header>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab" :class="{ active: tab === 'grid' }" @click="tab = 'grid'">Main Grid</div>
+    <div class="tab" :class="{ active: tab === 'shortcuts' }" @click="tab = 'shortcuts'">Shortcuts</div>
+  </div>
+
+  <!-- === MAIN GRID TAB === -->
+  <div class="tab-content" :class="{ active: tab === 'grid' }">
+    <div class="section-title">
+      <span>📊 Spreadsheet Grid</span>
+      <span class="badge badge-core">5 cols × <span x-text="rows.length"></span> rows</span>
+    </div>
+
+    <div class="controls">
+      <button class="primary" @click="addRow">＋ Add Row</button>
+      <button @click="removeRow" :disabled="rows.length <= 1">－ Remove Last</button>
+      <button @click="resetGrid">↺ Reset</button>
+      <span style="font-size:0.75rem;color:#9ca3af;">
+        <span x-text="rows.length"></span> rows · Cell: (<span x-text="gridActiveRow + 1"></span>, <span x-text="gridActiveCol + 1"></span>)
+      </span>
+      <button @click="showToast('Press ? for keyboard shortcuts')" style="margin-left:auto;">⌨ Shortcuts</button>
+    </div>
+
+    <div class="grid-wrapper">
+      <!--
+        The grid controller `hypergrid()` manages keyboard navigation and cell formatting.
+        maxRows is kept in sync with the outer rows array via $watch.
+        Events bubble up to demoApp() for data operations.
+      -->
+      <div id="main-grid"
+           x-data="hypergrid({ rows: rows.length, cols: 5, sortable: true })"
+           @keydown.window="handleKey($event)">
+
+        <table class="hg-grid">
+          <thead>
+            <tr class="hg-header">
+              <th class="hg-cell" style="width:2.5rem;min-width:2rem;"></th>
+              <th class="hg-cell hg-sort-btn" @click="toggleSort(0)">Name <span class="hg-sort-icon">↕</span></th>
+              <th class="hg-cell hg-sort-btn" @click="toggleSort(1)">Email <span class="hg-sort-icon">↕</span></th>
+              <th class="hg-cell hg-sort-btn" @click="toggleSort(2)">Status <span class="hg-sort-icon">↕</span></th>
+              <th class="hg-cell hg-sort-btn" @click="toggleSort(3)">Tier <span class="hg-sort-icon">↕</span></th>
+              <th class="hg-cell hg-sort-btn" @click="toggleSort(4)">Tasks <span class="hg-sort-icon">↕</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(row, rIdx) in rows" :key="row.id">
+              <tr class="hg-row" :data-id="row.id">
+                <td class="hg-cell hg-drag-handle" style="text-align:center;">⋮⋮</td>
+
+                <!-- Name (Text) -->
+                <td class="hg-cell hg-cell-text"
+                    :data-row="rIdx" data-col="0"
+                    :class="focusedKey === rIdx + ':0' ? 'hg-focused' : ''"
+                    @click="focusCell(rIdx, 0, false); $dispatch('cell-focus', {row:rIdx, col:0})">
+                  <input type="text" class="hg-cell-input" x-model="row.name"
+                         @blur="row.name = $el.value">
+                </td>
+
+                <!-- Email (Text) -->
+                <td class="hg-cell hg-cell-text"
+                    :data-row="rIdx" data-col="1"
+                    :class="focusedKey === rIdx + ':1' ? 'hg-focused' : ''"
+                    @click="focusCell(rIdx, 1, false); $dispatch('cell-focus', {row:rIdx, col:1})">
+                  <input type="text" class="hg-cell-input" x-model="row.email"
+                         @blur="row.email = $el.value">
+                </td>
+
+                <!-- Status (Chip) -->
+                <td class="hg-cell hg-cell-chip"
+                    :data-row="rIdx" data-col="2"
+                    :class="focusedKey === rIdx + ':2' ? 'hg-focused' : ''"
+                    @click="focusCell(rIdx, 2, false); $dispatch('cell-focus', {row:rIdx, col:2})"
+                    x-data="{ open: false }">
+                  <div @click="open = !open" class="hg-cursor-pointer hg-select-none">
+                    <span class="hg-chip"
+                          :class="{
+                            'hg-chip-active': row.status === 'Active',
+                            'hg-chip-pending': row.status === 'Paused',
+                            'hg-chip-archived': row.status === 'Archived'
+                          }"
+                          x-text="row.status"></span>
+                  </div>
+                  <div class="hg-chip-menu" x-show="open" @click.away="open = false" x-transition>
+                    <template x-for="s in ['Active','Paused','Archived']" :key="s">
+                      <div class="hg-chip-option" @click="row.status = s; open = false" x-text="s"></div>
+                    </template>
+                  </div>
+                </td>
+
+                <!-- Tier (Dropdown) -->
+                <td class="hg-cell hg-cell-dropdown"
+                    :data-row="rIdx" data-col="3"
+                    :class="focusedKey === rIdx + ':3' ? 'hg-focused' : ''"
+                    @click="focusCell(rIdx, 3, false); $dispatch('cell-focus', {row:rIdx, col:3})"
+                    x-data="{ open: false }">
+                  <div @click="open = !open" class="hg-dropdown-trigger">
+                    <span x-text="row.tier"></span>
+                    <span class="hg-dropdown-arrow">▼</span>
+                  </div>
+                  <div class="hg-dropdown-menu" x-show="open" @click.away="open = false" x-transition>
+                    <template x-for="opt in ['Free','Premium','Enterprise']" :key="opt">
+                      <div class="hg-dropdown-item" @click="row.tier = opt; open = false" x-text="opt"></div>
+                    </template>
+                  </div>
+                </td>
+
+                <!-- Tasks (Checklist) -->
+                <td class="hg-cell"
+                    :data-row="rIdx" data-col="4"
+                    :class="focusedKey === rIdx + ':4' ? 'hg-focused' : ''"
+                    @click="focusCell(rIdx, 4, false); $dispatch('cell-focus', {row:rIdx, col:4})">
+                  <div class="hg-checklist">
+                    <template x-for="(task, tIdx) in row.tasks" :key="tIdx">
+                      <label>
+                        <input type="checkbox" x-model="task.done">
+                        <span x-text="task.label"></span>
+                      </label>
+                    </template>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Keyboard Legend -->
+    <div class="legend">
+      <span class="key-group"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+      <span class="key-group"><kbd>Enter</kbd> Edit</span>
+      <span class="key-group"><kbd>Shift</kbd>+<kbd>Enter</kbd> Insert row</span>
+      <span class="key-group"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Save</span>
+      <span class="key-group"><kbd>Tab</kbd> Next cell</span>
+      <span class="key-group"><kbd>Esc</kbd> Cancel</span>
+      <span class="key-group"><kbd>Bksp</kbd> Clear cell</span>
+      <span class="key-group"><kbd>Ctrl</kbd>+<kbd>B</kbd> Bold</span>
+      <span class="key-group"><kbd>Ctrl</kbd>+<kbd>U</kbd> Underline</span>
+      <span class="key-group"><kbd>Alt</kbd>+<kbd>Enter</kbd> Highlight</span>
+    </div>
+  </div>
+
+  <!-- === SHORTCUTS TAB === -->
+  <div class="tab-content" :class="{ active: tab === 'shortcuts' }">
+    <div class="section-title">
+      <span>⌨ Keyboard Shortcuts</span>
+      <span class="badge badge-format">Formatting</span>
+    </div>
+    <div class="grid-wrapper" style="padding:1.5rem;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.875rem;">
+        <thead>
+          <tr style="border-bottom:2px solid #e5e7eb;">
+            <th style="text-align:left;padding:0.5rem;font-size:0.75rem;color:#6b7280;text-transform:uppercase;">Shortcut</th>
+            <th style="text-align:left;padding:0.5rem;font-size:0.75rem;color:#6b7280;text-transform:uppercase;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="s in shortcuts" :key="s.keys">
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:0.5rem;"><kbd x-html="s.keys"></kbd></td>
+              <td style="padding:0.5rem;color:#4b5563;" x-text="s.action"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span>📍 Cell: (<span x-text="gridActiveRow + 1"></span>, <span x-text="gridActiveCol + 1"></span>)</span>
+    <span>📝 Edit mode: <span x-text="gridEditMode ? 'ON' : 'OFF'" :style="gridEditMode ? 'color:#059669;font-weight:600' : ''"></span></span>
+    <span>📊 Rows: <span x-text="rows.length"></span></span>
+    <span x-show="lastAction" x-text="'⚡ ' + lastAction"></span>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" :class="{ show: toast.visible }" x-text="toast.message"></div>
+</div>
+
+<script>
+function demoApp() {
+  return {
+    tab: 'grid',
+    rows: [],
+    gridActiveRow: 0,
+    gridActiveCol: 0,
+    gridEditMode: false,
+    lastAction: '',
+    toast: { visible: false, message: '', timer: null },
+
+    shortcuts: [
+      { keys: '←&nbsp;→&nbsp;↑&nbsp;↓', action: 'Navigate between cells' },
+      { keys: 'Enter', action: 'Enter or exit edit mode on focused cell' },
+      { keys: 'Shift + Enter', action: 'Insert a new row below the current row' },
+      { keys: 'Ctrl + Enter', action: 'Force save / sync current cell (fires grid-save event)' },
+      { keys: 'Escape', action: 'Exit edit mode without saving' },
+      { keys: 'Tab / Shift+Tab', action: 'Move to next / previous cell (enters edit mode)' },
+      { keys: 'Backspace', action: 'Clear focused cell content' },
+      { keys: 'Ctrl + Backspace', action: 'Clear entire row (with confirmation)' },
+      { keys: 'Delete', action: 'Clear focused cell content' },
+      { keys: 'Alt + Enter', action: 'Highlight focused cell (cycles through colors)' },
+      { keys: 'Alt + Backspace', action: 'Reset cell to default (remove highlight)' },
+      { keys: 'Ctrl + B', action: 'Toggle bold on focused cell' },
+      { keys: 'Ctrl + U', action: 'Toggle underline on focused cell' },
+      { keys: 'Ctrl + Alt + Backspace', action: 'Reset all formatting on focused cell' },
+      { keys: 'Home', action: 'Jump to first column' },
+      { keys: 'End', action: 'Jump to last column' },
+      { keys: 'Space', action: 'Toggle checkbox in checklist cell' },
+    ],
+
+    init() {
+      this.resetGrid();
+
+      // Track grid state from the hypergrid component
+      this.$watch('tab', () => {
+        if (this.tab === 'grid') {
+          this.$nextTick(() => this._syncGridState());
+        }
+      });
+
+      // Keep maxRows in sync when rows array changes
+      this.$watch('rows.length', () => {
+        this.$nextTick(() => {
+          const g = this._getGrid();
+          if (g) g.maxRows = this.rows.length;
+        });
+      });
+
+      // Periodically sync grid state for status bar
+      setInterval(() => this._syncGridState(), 300);
+    },
+
+    _syncGridState() {
+      const grid = document.getElementById('main-grid');
+      if (!grid || !grid.__x) return;
+      const data = grid.__x.getData();
+      this.gridActiveRow = data.activeRow;
+      this.gridActiveCol = data.activeCol;
+      this.gridEditMode = data.editMode;
+    },
+
+    _getGrid() {
+      const el = document.getElementById('main-grid');
+      return el?.__x?.getData();
+    },
+
+    // ---- Row Data Management ----
+    addRow() {
+      const n = this.rows.length + 1;
+      this.rows.push({
+        id: 'r' + Date.now(),
+        name: 'User ' + n,
+        email: 'user' + n + '@example.com',
+        status: 'Active',
+        tier: 'Free',
+        tasks: [{ id: 't-new-' + n, label: 'New task', done: false }],
+      });
+      this.setLastAction('Row added');
+    },
+
+    removeRow() {
+      if (this.rows.length <= 1) return;
+      this.rows.pop();
+      // Clamp activeRow in child grid
+      const g = this._getGrid();
+      if (g && g.activeRow >= this.rows.length) g.activeRow = this.rows.length - 1;
+      this.setLastAction('Row removed');
+    },
+
+    resetGrid() {
+      this.rows = [
+        { id: 'r1', name: 'Alice Johnson', email: 'alice@example.com', status: 'Active', tier: 'Enterprise', tasks: [{ id: 't1', label: 'Setup CI/CD', done: true }, { id: 't2', label: 'Write docs', done: false }] },
+        { id: 'r2', name: 'Bob Smith', email: 'bob@example.com', status: 'Paused', tier: 'Premium', tasks: [{ id: 't3', label: 'Review PR', done: false }] },
+        { id: 'r3', name: 'Carol Davis', email: 'carol@example.com', status: 'Active', tier: 'Free', tasks: [{ id: 't4', label: 'Fix bug #42', done: true }, { id: 't5', label: 'Deploy v2', done: false }] },
+        { id: 'r4', name: 'Dave Wilson', email: 'dave@example.com', status: 'Archived', tier: 'Enterprise', tasks: [{ id: 't6', label: 'Audit logs', done: true }] },
+        { id: 'r5', name: 'Eve Martin', email: 'eve@example.com', status: 'Active', tier: 'Premium', tasks: [{ id: 't7', label: 'Update deps', done: false }, { id: 't8', label: 'Write tests', done: false }] },
+      ];
+      this.setLastAction('Grid reset');
+    },
+
+    // ---- Event Handlers from hypergrid ----
+    onInsert(event) {
+      const { afterRow } = event.detail;
+      const idx = afterRow + 1;
+      const n = this.rows.length + 1;
+      this.rows.splice(idx, 0, {
+        id: 'r' + Date.now(),
+        name: 'New User',
+        email: 'new@example.com',
+        status: 'Active',
+        tier: 'Free',
+        tasks: [],
+      });
+      this.setLastAction('Row inserted at ' + (idx + 1));
+    },
+
+    onClearCell(event) {
+      const { row, col } = event.detail;
+      const field = ['name','email','status','tier','tasks'][col];
+      if (field && this.rows[row]) {
+        if (field === 'status') this.rows[row][field] = 'Active';
+        else if (field === 'tier') this.rows[row][field] = 'Free';
+        else if (field === 'tasks') this.rows[row][field] = [];
+        else this.rows[row][field] = '';
+        this.setLastAction('Cell (' + (row+1) + ',' + (col+1) + ') cleared');
+      }
+    },
+
+    onClearRow(event) {
+      const { row } = event.detail;
+      if (this.rows[row]) {
+        this.rows.splice(row, 1);
+        const g = this._getGrid();
+        if (g && g.activeRow >= this.rows.length) g.activeRow = Math.max(0, this.rows.length - 1);
+        this.setLastAction('Row ' + (row+1) + ' deleted');
+      }
+    },
+
+    onSave(event) {
+      const { row, col, value } = event.detail;
+      this.setLastAction('Saved cell (' + (row+1) + ',' + (col+1) + ') = "' + value + '"');
+      this.showToast('💾 Cell saved');
+    },
+
+    onFormat(event) {
+      const { row, col, formats } = event.detail;
+      const parts = [];
+      if (formats.bold) parts.push('bold');
+      if (formats.underline) parts.push('underline');
+      if (formats.highlight) parts.push('highlight');
+      this.setLastAction('Formatted (' + (row+1) + ',' + (col+1) + '): ' + (parts.join(', ') || 'reset'));
+    },
+
+    onReorder(event) {
+      this.setLastAction('Rows reordered: ' + event.detail.from + ' → ' + event.detail.to);
+      // Reorder the actual data array to match
+      const { from, to } = event.detail;
+      if (from !== undefined && to !== undefined) {
+        const item = this.rows.splice(from, 1)[0];
+        this.rows.splice(to, 0, item);
+      }
+    },
+
+    onSort(event) {
+      const dir = event.detail.asc ? 'asc' : 'desc';
+      this.setLastAction('Sorted column ' + (event.detail.col + 1) + ' ' + dir);
+    },
+
+    setLastAction(msg) {
+      this.lastAction = msg;
+    },
+
+    showToast(msg) {
+      this.toast.message = msg;
+      this.toast.visible = true;
+      clearTimeout(this.toast.timer);
+      this.toast.timer = setTimeout(() => { this.toast.visible = false; }, 2000);
+    },
+  };
+}
+</script>
+
+</body>
+</html>

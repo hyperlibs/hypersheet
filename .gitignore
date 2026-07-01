@@ -1,0 +1,14 @@
+node_modules/
+dist/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.vendor/
+target/
+casbin_model.conf
+casbin_policy.csv
+*.exe
+.DS_Store
+test-results/
+playwright-report/

@@ -1,0 +1,10 @@
+[package]
+name = "hypergrid"
+version = "0.1.0"
+edition = "2021"
+description = "HyperGrid Rust backend - HTML-first spreadsheet grid with Casbin column security"
+license = "MIT"
+
+[dependencies]
+casbin = "2.0"
+serde_json = "1.0"
