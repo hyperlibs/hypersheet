@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hypersheet Demo</title>
   <script defer src="../src/js/providers.js"></script>
+  <script defer src="../src/js/schema.js"></script>
   <script defer src="../src/js/hypersheet.js"></script>
   <script defer src="https://unpkg.com/alpinejs@3/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -67,6 +68,7 @@
     <div class="tab" :class="{ active: tab === 'grid' }" @click="tab = 'grid'">Main Grid</div>
     <div class="tab" :class="{ active: tab === 'shortcuts' }" @click="tab = 'shortcuts'">Shortcuts</div>
     <div class="tab" :class="{ active: tab === 'providers' }" @click="tab = 'providers'">Providers</div>
+    <div class="tab" :class="{ active: tab === 'schema' }" @click="tab = 'schema'">Schema</div>
   </div>
 
   <!-- === MAIN GRID TAB === -->
@@ -351,6 +353,152 @@
   provider: { type: 'database', table: 'roles', label: 'name', value: 'id' } }</pre>
   </div>
 
+  <!-- === SCHEMA TAB === -->
+  <div class="tab-content" :class="{ active: tab === 'schema' }">
+    <div class="section-title">
+      <span>📋 Schema-Driven Grid</span>
+      <span class="badge badge-core">validation · visibility · defaults · layout</span>
+    </div>
+    <p style="margin-bottom:1rem;color:#6b7280;font-size:0.875rem;">
+      Declarative column schema. Validation, role-based visibility, dynamic defaults,
+      and layout — all from configuration.
+    </p>
+
+    <div style="margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+      <button class="primary" @click="schemaRole = 'admin'">👑 Admin View</button>
+      <button @click="schemaRole = 'editor'">✏️ Editor View</button>
+      <button @click="schemaRole = 'viewer'">👁️ Viewer View</button>
+      <span style="font-size:0.75rem;color:#6b7280;">Current role: <strong x-text="schemaRole"></strong></span>
+      <button @click="validateSchemaGrid" style="margin-left:auto;" :class="{ primary: schemaErrors.length > 0 }">✓ Validate</button>
+    </div>
+
+    <div class="grid-wrapper">
+      <div id="schema-grid"
+           x-data="hypersheet({
+             rows: schemaRows.length,
+             cols: 5,
+             schema: {
+               columns: [
+                 { field: 'name', title: 'Name', type: 'text', required: true, maxLength: 50,
+                   visible: { roles: ['admin', 'editor', 'viewer'] },
+                   layout: { width: 180 } },
+                 { field: 'email', title: 'Email', type: 'text', required: true, email: true,
+                   visible: { roles: ['admin', 'editor'] },
+                   layout: { width: 220 } },
+                 { field: 'role', title: 'Role', type: 'dropdown', required: true,
+                   default: 'viewer',
+                   options: [
+                     { value: 'admin', label: 'Administrator' },
+                     { value: 'editor', label: 'Editor' },
+                     { value: 'viewer', label: 'Viewer' }
+                   ],
+                   visible: { roles: ['admin'] },
+                   layout: { width: 160 } },
+                 { field: 'startDate', title: 'Start Date', type: 'text',
+                   default: 'system.today',
+                   visible: { roles: ['admin', 'editor'] },
+                   layout: { width: 140, align: 'center' } },
+                 { field: 'notes', title: 'Notes', type: 'text', maxLength: 200,
+                   visible: { roles: ['admin', 'editor', 'viewer'] },
+                   layout: { width: 250 } },
+               ]
+             }
+           })">
+        <table class="hg-grid">
+          <thead>
+            <tr class="hg-header">
+              <th class="hg-cell" style="width:1.5rem;"></th>
+              <th class="hg-cell" x-show="isColumnVisible(0)">Name <span style="color:#dc2626;" x-show="columns[0]?.required">*</span></th>
+              <th class="hg-cell" x-show="isColumnVisible(1)">Email <span style="color:#dc2626;" x-show="columns[1]?.required">*</span></th>
+              <th class="hg-cell" x-show="isColumnVisible(2)">Role <span style="color:#dc2626;" x-show="columns[2]?.required">*</span></th>
+              <th class="hg-cell" x-show="isColumnVisible(3)">Start Date</th>
+              <th class="hg-cell" x-show="isColumnVisible(4)">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(row, rIdx) in schemaRows" :key="row.id">
+              <tr class="hg-row">
+                <td class="hg-cell" style="text-align:center;font-size:0.7rem;color:#9ca3af;" x-text="rIdx + 1"></td>
+                <td class="hg-cell hg-cell-text" :data-row="rIdx" data-col="0"
+                    :class="(focusedKey === rIdx + ':0' ? 'hg-focused' : '') + ' ' + (getColumnErrors(0).length ? 'hg-cell-error' : '')"
+                    x-show="isColumnVisible(0)"
+                    @click="focusCell(rIdx, 0, false)">
+                  <input type="text" class="hg-cell-input" x-model="schemaRows[rIdx].name"
+                         @blur="schemaRows[rIdx].name = $el.value; validateCell(rIdx, 0)">
+                </td>
+                <td class="hg-cell hg-cell-text" :data-row="rIdx" data-col="1"
+                    :class="(focusedKey === rIdx + ':1' ? 'hg-focused' : '') + ' ' + (getColumnErrors(1).length ? 'hg-cell-error' : '')"
+                    x-show="isColumnVisible(1)"
+                    @click="focusCell(rIdx, 1, false)">
+                  <input type="text" class="hg-cell-input" x-model="schemaRows[rIdx].email"
+                         @blur="schemaRows[rIdx].email = $el.value; validateCell(rIdx, 1)">
+                </td>
+                <td class="hg-cell hg-cell-dropdown" :data-row="rIdx" data-col="2"
+                    :class="(focusedKey === rIdx + ':2' ? 'hg-focused' : '')"
+                    x-show="isColumnVisible(2)"
+                    x-data="{ open: false }"
+                    @click="focusCell(rIdx, 2, false)">
+                  <div @click="open = !open" class="hg-dropdown-trigger">
+                    <span x-text="getColumnOptions(2).find(o => o.value === schemaRows[rIdx].role)?.label || schemaRows[rIdx].role || 'Select...'"></span>
+                    <span class="hg-dropdown-arrow">▼</span>
+                  </div>
+                  <div class="hg-dropdown-menu" x-show="open" @click.away="open = false">
+                    <template x-for="opt in getColumnOptions(2)" :key="opt.value">
+                      <div class="hg-dropdown-item" @click="schemaRows[rIdx].role = opt.value; open = false; validateCell(rIdx, 2)" x-text="opt.label"></div>
+                    </template>
+                  </div>
+                </td>
+                <td class="hg-cell hg-cell-text" :data-row="rIdx" data-col="3"
+                    :class="focusedKey === rIdx + ':3' ? 'hg-focused' : ''"
+                    x-show="isColumnVisible(3)"
+                    @click="focusCell(rIdx, 3, false)">
+                  <input type="text" class="hg-cell-input" x-model="schemaRows[rIdx].startDate"
+                         @blur="schemaRows[rIdx].startDate = $el.value"
+                         style="text-align:center;">
+                </td>
+                <td class="hg-cell hg-cell-text" :data-row="rIdx" data-col="4"
+                    :class="(focusedKey === rIdx + ':4' ? 'hg-focused' : '') + ' ' + (getColumnErrors(4).length ? 'hg-cell-error' : '')"
+                    x-show="isColumnVisible(4)"
+                    @click="focusCell(rIdx, 4, false)">
+                  <input type="text" class="hg-cell-input" x-model="schemaRows[rIdx].notes"
+                         @blur="schemaRows[rIdx].notes = $el.value; validateCell(rIdx, 4)">
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Validation Errors -->
+    <div x-show="schemaErrors.length > 0" style="margin-top:1rem;background:#fef2f2;border:1px solid #fca5a5;border-radius:0.5rem;padding:0.75rem 1rem;">
+      <div style="font-weight:600;color:#dc2626;font-size:0.875rem;margin-bottom:0.5rem;">⚠ Validation Errors</div>
+      <template x-for="err in schemaErrors" :key="err.row + '-' + err.field">
+        <div style="font-size:0.8125rem;color:#991b1b;padding:0.25rem 0;">
+          Row <span x-text="err.row + 1"></span>, <span x-text="err.field"></span>: <span x-text="err.message"></span>
+        </div>
+      </template>
+    </div>
+
+    <div style="margin-top:1.5rem;" class="section-title"><span>⚙ Schema Config</span></div>
+    <pre style="background:#1f2937;color:#e5e7eb;padding:1rem;border-radius:6px;font-size:0.8rem;overflow-x:auto;"
+><span style="color:#93c5fd;">// Column schema with validation, visibility, defaults, layout</span>
+{ field: 'email', title: 'Email', type: 'text',
+  required: true,
+  email: true,
+  maxLength: 100,
+  default: '',
+  visible: { roles: ['admin', 'editor'] },
+  layout: { width: 220 }
+}
+
+<span style="color:#93c5fd;">// Dynamic default: today's date</span>
+{ field: 'startDate', title: 'Start Date',
+  default: 'system.today',
+  layout: { width: 140, align: 'center' }
+}</pre>
+  </div>
+
   <!-- Status Bar -->
   <div class="status-bar">
     <span>📍 Cell: (<span x-text="gridActiveRow + 1"></span>, <span x-text="gridActiveCol + 1"></span>)</span>
@@ -375,6 +523,9 @@ function demoApp() {
     toast: { visible: false, message: '', timer: null },
     providerRows: [],
     providerStatus: {},
+    schemaRows: [],
+    schemaErrors: [],
+    schemaRole: 'admin',
 
     shortcuts: [
       { keys: '←&nbsp;→&nbsp;↑&nbsp;↓', action: 'Navigate between cells' },
@@ -399,12 +550,20 @@ function demoApp() {
     init() {
       this.resetGrid();
       this.resetProviderGrid();
+      this.resetSchemaGrid();
 
       // Track grid state from the hypersheet component
       this.$watch('tab', () => {
         if (this.tab === 'grid') {
           this.$nextTick(() => this._syncGridState());
         }
+      });
+
+      // Update body dataset roles when schemaRole changes
+      this.$watch('schemaRole', () => {
+        document.body.dataset.roles = this.schemaRole;
+        // Re-init schema grid to apply visibility
+        this.resetSchemaGrid();
       });
 
       // Keep maxRows in sync when rows array changes
@@ -465,6 +624,39 @@ function demoApp() {
         { id: 'r5', name: 'Eve Martin', email: 'eve@example.com', status: 'Active', tier: 'Premium', tasks: [{ id: 't7', label: 'Update deps', done: false }, { id: 't8', label: 'Write tests', done: false }] },
       ];
       this.setLastAction('Grid reset');
+    },
+
+    resetSchemaGrid() {
+      this.schemaErrors = [];
+      this.schemaRows = [
+        { id: 's1', name: 'Alice Johnson', email: 'alice@example.com', role: 'admin', startDate: '2026-01-15', notes: 'Team lead' },
+        { id: 's2', name: 'Bob Smith', email: 'bob@example.com', role: 'editor', startDate: '', notes: '' },
+        { id: 's3', name: '', email: 'bad-email', role: 'viewer', startDate: '', notes: 'A very long note that exceeds the maximum allowed length of two hundred characters which should trigger a validation error in the schema engine' },
+      ];
+      document.body.dataset.roles = this.schemaRole;
+    },
+
+    validateSchemaGrid() {
+      this.schemaErrors = [];
+      // Collect validation from all schema grid rows
+      this.schemaRows.forEach(function (row, rIdx) {
+        if (!row.name || row.name.trim() === '') {
+          this.schemaErrors.push({ row: rIdx, field: 'name', message: 'Name is required' });
+        } else if (row.name.length > 50) {
+          this.schemaErrors.push({ row: rIdx, field: 'name', message: 'Name exceeds 50 characters' });
+        }
+        if (!row.email || row.email.trim() === '') {
+          this.schemaErrors.push({ row: rIdx, field: 'email', message: 'Email is required' });
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) {
+          this.schemaErrors.push({ row: rIdx, field: 'email', message: 'Email format is invalid' });
+        }
+        if (!row.role) {
+          this.schemaErrors.push({ row: rIdx, field: 'role', message: 'Role is required' });
+        }
+        if (row.notes && row.notes.length > 200) {
+          this.schemaErrors.push({ row: rIdx, field: 'notes', message: 'Notes exceeds 200 characters' });
+        }
+      }.bind(this));
     },
 
     resetProviderGrid() {

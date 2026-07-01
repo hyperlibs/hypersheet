@@ -25,6 +25,10 @@
 .hg-selected { background: rgba(59,130,246,0.08); }
 .hg-editing { box-shadow: inset 0 0 0 2px #3b82f6; }
 
+/* --- Validation Error --- */
+.hg-cell-error { box-shadow: inset 0 0 0 2px #dc2626; background: rgba(220,38,38,0.04); }
+.hg-cell-error.hg-focused { box-shadow: inset 0 0 0 2px #dc2626; }
+
 /* --- Locked / Hidden --- */
 .hg-locked { background: #f9fafb; color: #9ca3af; cursor: not-allowed; user-select: none; }
 .hg-locked input, .hg-locked textarea { pointer-events: none; }

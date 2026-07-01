@@ -41,7 +41,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await grid.navigateToCell(0, 0);
     await page.keyboard.press('ArrowRight');
     await page.waitForTimeout(100);
-    const focused = await page.locator('[data-row="0"][data-col="1"].hg-focused');
+    const focused = await page.locator('#main-grid [data-row="0"][data-col="1"].hg-focused');
     await expect(focused).toHaveCount(1);
   });
 
@@ -49,7 +49,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await grid.navigateToCell(0, 0);
     await page.keyboard.press('ArrowDown');
     await page.waitForTimeout(100);
-    const focused = await page.locator('[data-row="1"][data-col="0"].hg-focused');
+    const focused = await page.locator('#main-grid [data-row="1"][data-col="0"].hg-focused');
     await expect(focused).toHaveCount(1);
   });
 
@@ -57,7 +57,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await grid.navigateToCell(2, 0);
     await page.keyboard.press('ArrowUp');
     await page.waitForTimeout(100);
-    const focused = await page.locator('[data-row="1"][data-col="0"].hg-focused');
+    const focused = await page.locator('#main-grid [data-row="1"][data-col="0"].hg-focused');
     await expect(focused).toHaveCount(1);
   });
 
@@ -65,7 +65,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await grid.navigateToCell(0, 2);
     await page.keyboard.press('ArrowLeft');
     await page.waitForTimeout(100);
-    const focused = await page.locator('[data-row="0"][data-col="1"].hg-focused');
+    const focused = await page.locator('#main-grid [data-row="0"][data-col="1"].hg-focused');
     await expect(focused).toHaveCount(1);
   });
 
@@ -74,7 +74,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await page.keyboard.press('Enter');
     await page.waitForTimeout(200);
     // The input inside the cell should be focused
-    const input = page.locator('[data-row="0"][data-col="0"] .hg-cell-input:focus');
+    const input = page.locator('#main-grid [data-row="0"][data-col="0"] .hg-cell-input:focus');
     await expect(input).toHaveCount(1);
   });
 
@@ -84,7 +84,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await page.waitForTimeout(100);
     await page.keyboard.press('Enter');
     await page.waitForTimeout(100);
-    const input = page.locator('[data-row="0"][data-col="0"] .hg-cell-input:focus');
+    const input = page.locator('#main-grid [data-row="0"][data-col="0"] .hg-cell-input:focus');
     await expect(input).toHaveCount(0);
   });
 
@@ -94,7 +94,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await page.keyboard.press('Enter');
     await page.waitForTimeout(100);
     // Should exit edit and move to next row
-    const focused = await page.locator('[data-row="1"][data-col="0"].hg-focused');
+    const focused = await page.locator('#main-grid [data-row="1"][data-col="0"].hg-focused');
     await expect(focused).toHaveCount(1);
   });
 
@@ -103,7 +103,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await grid.enterEditMode();
     await page.keyboard.press('Escape');
     await page.waitForTimeout(100);
-    const input = page.locator('.hg-cell-input:focus');
+    const input = page.locator('#main-grid .hg-cell-input:focus');
     await expect(input).toHaveCount(0);
   });
 
@@ -111,7 +111,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await grid.navigateToCell(0, 0);
     await page.keyboard.press('Tab');
     await page.waitForTimeout(200);
-    const input = page.locator('[data-row="0"][data-col="1"] .hg-cell-input:focus');
+    const input = page.locator('#main-grid [data-row="0"][data-col="1"] .hg-cell-input:focus');
     await expect(input).toHaveCount(1);
   });
 
@@ -119,7 +119,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await grid.navigateToCell(0, 2);
     await page.keyboard.press('Shift+Tab');
     await page.waitForTimeout(200);
-    const focused = await page.locator('[data-row="0"][data-col="1"].hg-focused');
+    const focused = await page.locator('#main-grid [data-row="0"][data-col="1"].hg-focused');
     await expect(focused).toHaveCount(1);
   });
 
@@ -127,7 +127,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await grid.navigateToCell(0, 3);
     await page.keyboard.press('Home');
     await page.waitForTimeout(100);
-    const focused = await page.locator('[data-row="0"][data-col="0"].hg-focused');
+    const focused = await page.locator('#main-grid [data-row="0"][data-col="0"].hg-focused');
     await expect(focused).toHaveCount(1);
   });
 
@@ -135,7 +135,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     await grid.navigateToCell(0, 0);
     await page.keyboard.press('End');
     await page.waitForTimeout(100);
-    const focused = await page.locator('[data-row="0"][data-col="4"].hg-focused');
+    const focused = await page.locator('#main-grid [data-row="0"][data-col="4"].hg-focused');
     await expect(focused).toHaveCount(1);
   });
 
@@ -143,7 +143,7 @@ test.describe('Hypersheet Keyboard Navigation', () => {
     // Cell (0, 4) is the Tasks column with checkboxes
     await grid.navigateToCell(0, 4);
     // Get initial state
-    const firstCheckbox = page.locator('[data-row="0"][data-col="4"] input[type="checkbox"]').first();
+    const firstCheckbox = page.locator('#main-grid [data-row="0"][data-col="4"] input[type="checkbox"]').first();
     const initialChecked = await firstCheckbox.isChecked();
     await page.keyboard.press('Space');
     await page.waitForTimeout(200);
@@ -222,7 +222,7 @@ test.describe('Hypersheet Editing Shortcuts', () => {
   test('Edit cell value via keyboard', async ({ page }) => {
     await grid.navigateToCell(2, 0);
     await grid.enterEditMode();
-    const input = page.locator('[data-row="2"][data-col="0"] .hg-cell-input:focus');
+    const input = page.locator('#main-grid [data-row="2"][data-col="0"] .hg-cell-input:focus');
     await input.fill('Test Name');
     await page.keyboard.press('Enter'); // Save and move down
     await page.waitForTimeout(200);
@@ -248,7 +248,7 @@ test.describe('Hypersheet Cell Formatting Shortcuts', () => {
     await grid.navigateToCell(0, 0);
     await page.keyboard.press('Control+b');
     await page.waitForTimeout(200);
-    const cell = page.locator('[data-row="0"][data-col="0"]');
+    const cell = page.locator('#main-grid [data-row="0"][data-col="0"]');
     const fontWeight = await cell.evaluate(el => getComputedStyle(el).fontWeight);
     expect(parseInt(fontWeight)).toBeGreaterThanOrEqual(700);
   });
@@ -257,7 +257,7 @@ test.describe('Hypersheet Cell Formatting Shortcuts', () => {
     await grid.navigateToCell(0, 0);
     await page.keyboard.press('Control+u');
     await page.waitForTimeout(200);
-    const cell = page.locator('[data-row="0"][data-col="0"]');
+    const cell = page.locator('#main-grid [data-row="0"][data-col="0"]');
     const textDec = await cell.evaluate(el => getComputedStyle(el).textDecoration);
     expect(textDec).toContain('underline');
   });
@@ -266,7 +266,7 @@ test.describe('Hypersheet Cell Formatting Shortcuts', () => {
     await grid.navigateToCell(0, 0);
     await page.keyboard.press('Alt+Enter');
     await page.waitForTimeout(200);
-    const cell = page.locator('[data-row="0"][data-col="0"]');
+    const cell = page.locator('#main-grid [data-row="0"][data-col="0"]');
     const bgColor = await cell.evaluate(el => getComputedStyle(el).backgroundColor);
     // Should have a highlight color (not transparent/white)
     expect(bgColor).not.toBe('rgba(0, 0, 0, 0)');
@@ -281,7 +281,7 @@ test.describe('Hypersheet Cell Formatting Shortcuts', () => {
     // Then reset
     await page.keyboard.press('Alt+Backspace');
     await page.waitForTimeout(200);
-    const cell = page.locator('[data-row="0"][data-col="0"]');
+    const cell = page.locator('#main-grid [data-row="0"][data-col="0"]');
     const bgColor = await cell.evaluate(el => getComputedStyle(el).backgroundColor);
     // Should be reset to default (transparent or white)
     expect(bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'rgb(255, 255, 255)').toBeTruthy();
@@ -297,7 +297,7 @@ test.describe('Hypersheet Cell Formatting Shortcuts', () => {
     // Reset all
     await page.keyboard.press('Control+Alt+Backspace');
     await page.waitForTimeout(200);
-    const cell = page.locator('[data-row="0"][data-col="0"]');
+    const cell = page.locator('#main-grid [data-row="0"][data-col="0"]');
     const weight = await cell.evaluate(el => getComputedStyle(el).fontWeight);
     const bg = await cell.evaluate(el => getComputedStyle(el).backgroundColor);
     expect(parseInt(weight)).toBeLessThan(700);
@@ -335,20 +335,20 @@ test.describe('Hypersheet Multi-Cell + Edge Cases', () => {
     // Try to go left from first column
     await page.keyboard.press('ArrowLeft');
     await page.waitForTimeout(100);
-    const col0 = await page.locator('[data-row="0"][data-col="0"].hg-focused');
+    const col0 = await page.locator('#main-grid [data-row="0"][data-col="0"].hg-focused');
     await expect(col0).toHaveCount(1);
   });
 
   test('chip cell can be changed via keyboard + click', async ({ page }) => {
     // Navigate to a chip cell
     await grid.navigateToCell(0, 2);
-    const chip = page.locator('[data-row="0"][data-col="2"] .hg-chip');
+    const chip = page.locator('#main-grid [data-row="0"][data-col="2"] .hg-chip');
     const initialText = await chip.textContent();
     // Click to open menu
     await chip.click();
     await page.waitForTimeout(200);
     // Click the first different option
-    const options = page.locator('.hg-chip-menu .hg-chip-option');
+    const options = page.locator('#main-grid .hg-chip-menu .hg-chip-option');
     const count = await options.count();
     for (let i = 0; i < count; i++) {
       const optText = await options.nth(i).textContent();
@@ -364,7 +364,7 @@ test.describe('Hypersheet Multi-Cell + Edge Cases', () => {
 
   test('dropdown cell renders options', async ({ page }) => {
     await grid.navigateToCell(0, 3);
-    const items = page.locator('[data-row="0"][data-col="3"] .hg-dropdown-menu .hg-dropdown-item');
+    const items = page.locator('#main-grid [data-row="0"][data-col="3"] .hg-dropdown-menu .hg-dropdown-item');
     await expect(items).toHaveCount(3);
     const texts = await items.allTextContents();
     expect(texts).toEqual(['Free', 'Premium', 'Enterprise']);

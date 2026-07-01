@@ -62,18 +62,45 @@ document.addEventListener('alpine:init', () => {
     promptOnClear: config.promptOnClear !== undefined ? config.promptOnClear : false,
     promptOnClearRow: config.promptOnClearRow !== undefined ? config.promptOnClearRow : true,
 
+    // --- Schema Engine ---
+    _schema: null,
+    _userRoles: [],
+
     // --- Provider System ---
     _registry: null,
     _columnProviders: {},
+
+    // --- Validation State ---
+    validationErrors: [],
 
     // --- Init ---
     init() {
       this.$watch('activeRow', () => this._updateFocusedKey());
       this.$watch('activeCol', () => this._updateFocusedKey());
 
+      // Resolve user roles from data attribute
+      this._userRoles = ((document.body && document.body.dataset.roles) || '').split(',').map(function (r) { return r.trim(); }).filter(Boolean);
+
+      // Resolve schema if schema engine is available
+      if (typeof HypersheetSchema !== 'undefined') {
+        var schemaConfig = config.schema || config;
+        this._schema = HypersheetSchema.resolveSchema(schemaConfig, null, this._userRoles);
+        // Apply defaults from schema
+        if (this._schema.columns.length > 0) {
+          this.columns = this._schema.columns;
+        }
+        // Register providers from schema
+        if (this._schema.providers && typeof HypersheetProviders !== 'undefined') {
+          var reg = HypersheetProviders.registry;
+          Object.keys(this._schema.providers).forEach(function (name) {
+            reg.define(name, this._schema.providers[name]);
+          }.bind(this));
+        }
+      }
+
       // Wire up provider registry if available
       if (typeof HypersheetProviders !== 'undefined') {
-        this._registry = HypersheetProviders.registry;
+        if (!this._registry) this._registry = HypersheetProviders.registry;
         if (config.providers) {
           Object.keys(config.providers).forEach(function (name) {
             this._registry.define(name, config.providers[name]);
@@ -157,6 +184,112 @@ document.addEventListener('alpine:init', () => {
       return this._columnProviders[col] || null;
     },
 
+    // --- Validation ---
+    validateCell(row, col) {
+      var colDef = this.columns[col];
+      if (!colDef || typeof HypersheetSchema === 'undefined') return [];
+      var val = this.getCellValue(row, col);
+      var errors = HypersheetSchema.validateCell(val, colDef, this._dataRows ? this._dataRows : null);
+      this.validationErrors = this.validationErrors.filter(function (e) { return e.row !== row || e.field !== colDef.field; });
+      errors.forEach(function (e) { e.row = row; this.validationErrors.push(e); }.bind(this));
+      return errors;
+    },
+
+    validateRow(row) {
+      var allErrors = [];
+      this.columns.forEach(function (col, c) {
+        var errs = this.validateCell(row, c);
+        allErrors = allErrors.concat(errs);
+      }.bind(this));
+      return allErrors;
+    },
+
+    validateGrid() {
+      if (typeof HypersheetSchema === 'undefined') return [];
+      var allRows = this._dataRows || [];
+      var errors = HypersheetSchema.validateGrid(allRows, this.columns);
+      this.validationErrors = errors;
+      return errors;
+    },
+
+    getColumnErrors(col) {
+      var colDef = this.columns[col];
+      if (!colDef) return [];
+      return this.validationErrors.filter(function (e) { return e.field === colDef.field; });
+    },
+
+    clearValidation() {
+      this.validationErrors = [];
+    },
+
+    // --- Visibility ---
+    getVisibleColumns() {
+      if (typeof HypersheetSchema === 'undefined') return this.columns;
+      return HypersheetSchema.filterVisibleColumns(this.columns, this._userRoles);
+    },
+
+    isColumnVisible(col) {
+      var colDef = this.columns[col];
+      if (!colDef) return true;
+      if (typeof HypersheetSchema === 'undefined') return true;
+      return HypersheetSchema.isVisible(colDef, this._userRoles);
+    },
+
+    columnCount() {
+      return this.getVisibleColumns().length;
+    },
+
+    // --- Layout ---
+    getColumnWidth(col) {
+      var colDef = this.columns[col];
+      if (!colDef) return null;
+      if (typeof HypersheetSchema !== 'undefined') {
+        var layout = HypersheetSchema.getLayout(colDef);
+        return layout.width;
+      }
+      return colDef.width || null;
+    },
+
+    getColumnAlign(col) {
+      var colDef = this.columns[col];
+      if (!colDef) return 'left';
+      if (typeof HypersheetSchema !== 'undefined') {
+        var layout = HypersheetSchema.getLayout(colDef);
+        return layout.align;
+      }
+      return colDef.align || 'left';
+    },
+
+    isColumnFrozen(col) {
+      var colDef = this.columns[col];
+      if (!colDef) return false;
+      if (typeof HypersheetSchema !== 'undefined') {
+        var layout = HypersheetSchema.getLayout(colDef);
+        return layout.frozen;
+      }
+      return colDef.frozen || false;
+    },
+
+    // --- Default Values ---
+    getDefaultValue(col) {
+      var colDef = this.columns[col];
+      if (!colDef) return '';
+      if (typeof HypersheetSchema !== 'undefined') {
+        return HypersheetSchema.resolveDefault(colDef.default, colDef,
+          (typeof HypersheetProviders !== 'undefined') ? HypersheetProviders.registry : null);
+      }
+      return colDef.default || '';
+    },
+
+    applyDefaults(row) {
+      this.columns.forEach(function (col, c) {
+        if (row[col.field] === undefined || row[col.field] === null || row[col.field] === '') {
+          row[col.field] = this.getDefaultValue(c);
+        }
+      }.bind(this));
+      return row;
+    },
+
     // --- Reactive cell focus check (for Alpine templates) ---
     // Use: :class="focusedKey === rIdx + ':0' ? 'hg-focused' : ''"
     // Instead of: :class="isFocused(rIdx, 0) ? 'hg-focused' : ''" (NOT reactive!)
@@ -224,6 +357,10 @@ document.addEventListener('alpine:init', () => {
         input.dispatchEvent(new Event('input', { bubbles: true }));
         input.dispatchEvent(new Event('change', { bubbles: true }));
       }
+      // Run validation
+      this.validateCell(row, col);
+      // Emit cell changed hook
+      this._emit('cellChanged', { row: row, col: col, value: value, field: this.columns[col] ? this.columns[col].field : null });
     },
 
     // --- Cell Formatting ---
@@ -266,30 +403,46 @@ document.addEventListener('alpine:init', () => {
     // --- Clear Operations ---
     clearCell(row, col) {
       if (this.promptOnClear && !confirm('Clear this cell?')) return;
+      var data = { row: row, col: col, field: this.columns[col] ? this.columns[col].field : null };
+      this._emit('beforeDelete', data);
+      if (data._cancelled) return;
       this.setCellValue(row, col, '');
       this._emit('grid-clear-cell', { row, col });
+      this._emit('afterDelete', data);
     },
 
     clearRow(row) {
       if (this.promptOnClearRow && !confirm('Clear entire row?')) return;
+      var data = { row: row };
+      this._emit('beforeDelete', data);
+      if (data._cancelled) return;
       for (let c = 0; c < this.maxCols; c++) {
         this.setCellValue(row, c, '');
       }
       this._emit('grid-clear-row', { row });
+      this._emit('afterDelete', data);
     },
 
     // --- Insert Row ---
     insertRow(afterRow) {
+      var data = { afterRow: afterRow };
+      this._emit('beforeInsert', data);
+      if (data._cancelled) return;
       this._emit('grid-insert-row', { afterRow });
+      this._emit('afterInsert', data);
     },
 
     // --- Save / Sync ---
     forceSave() {
-      this._emit('grid-save', {
+      var data = {
         row: this.activeRow,
         col: this.activeCol,
         value: this.getCellValue(this.activeRow, this.activeCol)
-      });
+      };
+      this._emit('beforeSave', data);
+      if (data._cancelled) return;
+      this._emit('grid-save', data);
+      this._emit('afterSave', data);
     },
 
     // --- Highlight Color Cycle ---
@@ -525,8 +678,13 @@ document.addEventListener('alpine:init', () => {
 
     // --- Internal ---
     _emit(event, detail) {
+      // Call schema hooks first (can cancel by setting _cancelled)
+      if (typeof HypersheetSchema !== 'undefined' && this._schema) {
+        HypersheetSchema.emit(event, detail);
+        HypersheetSchema.emitAsync(event, detail);
+      }
       this.$el.dispatchEvent(new CustomEvent(event, {
-        detail,
+        detail: detail,
         bubbles: true,
         cancelable: true,
       }));
