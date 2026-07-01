@@ -22,11 +22,12 @@
     "dist/"
   ],
   "scripts": {
-    "build:css": "cp src/css/hypersheet.css dist/hypersheet.css",
+    "build:css": "cp src/css/hypersheet.css dist/hypersheet.css && cp src/css/views.css dist/views.css",
     "build:js": "cp src/js/hypersheet.js dist/hypersheet.js",
     "build:providers": "cp src/js/providers.js dist/providers.js",
     "build:schema": "cp src/js/schema.js dist/schema.js",
-    "build": "npm run build:css && npm run build:js && npm run build:providers && npm run build:schema",
+    "build:views": "cp src/js/views.js dist/views.js",
+    "build": "npm run build:css && npm run build:js && npm run build:providers && npm run build:schema && npm run build:views",
     "prepublishOnly": "bun run build",
     "test": "bunx playwright test tests/playwright/keyboard-shortcuts.spec.js --config=tests/playwright/playwright.config.js"
   },

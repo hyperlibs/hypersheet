@@ -1,0 +1,241 @@
+/* =========================================================================
+   Hypersheet Views — Calendar, List, View Switcher
+   ========================================================================= */
+
+/* --- View Switcher --- */
+.hs-view-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.hs-view-btn {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: #fff;
+  color: #374151;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.hs-view-btn:hover { background: #f3f4f6; }
+
+.hs-view-btn.active {
+  background: #6366f1;
+  color: #fff;
+  border-color: #6366f1;
+}
+
+.hs-view-btn.active:hover { background: #4f46e5; }
+
+/* --- Calendar Specific --- */
+.hs-cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.hs-cal-nav-btn {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  background: #fff;
+  color: #374151;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.hs-cal-nav-btn:hover { background: #f3f4f6; }
+
+.hs-cal-label {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.95rem;
+  min-width: 10rem;
+  text-align: center;
+}
+
+.hs-cal-preset-btn {
+  padding: 0.25rem 0.6rem;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: #6366f1;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.hs-cal-preset-btn:hover { background: #eef2ff; }
+.hs-cal-preset-btn.active { background: #6366f1; color: #fff; }
+
+/* --- Calendar Grid --- */
+.hs-calendar {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.hs-calendar th {
+  padding: 0.5rem 0.25rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.hs-calendar td {
+  border: 1px solid #e5e7eb;
+  vertical-align: top;
+  height: 7rem;
+  padding: 0.25rem;
+  position: relative;
+}
+
+.hs-cal-day-num {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.hs-cal-day-num.today {
+  background: #6366f1;
+  color: #fff;
+  width: 1.6rem;
+  height: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.hs-cal-item {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.3rem;
+  margin-bottom: 0.15rem;
+  border-radius: 0.2rem;
+  background: #eef2ff;
+  color: #4338ca;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hs-cal-item:hover { background: #c7d2fe; }
+
+.hs-cal-item.danger { background: #fef2f2; color: #b91c1c; }
+.hs-cal-item.danger:hover { background: #fecaca; }
+.hs-cal-item.success { background: #f0fdf4; color: #15803d; }
+.hs-cal-item.success:hover { background: #bbf7d0; }
+.hs-cal-item.warning { background: #fffbeb; color: #b45309; }
+.hs-cal-item.warning:hover { background: #fde68a; }
+
+/* --- Quarter view: 3 months side by side --- */
+.hs-cal-quarter {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+.hs-cal-month-col h4 {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #374151;
+  margin: 0 0 0.5rem 0;
+}
+
+.hs-cal-month-col .hs-calendar td {
+  height: 4rem;
+}
+
+/* --- Week / Day view compact --- */
+.hs-cal-week-header {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.hs-cal-day-col {
+  flex: 1;
+  min-width: 6rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+}
+
+.hs-cal-day-col.today { background: #f5f3ff; border-color: #6366f1; }
+
+.hs-cal-day-col h5 {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+}
+
+/* --- List View --- */
+.hs-list-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 0.75rem;
+}
+
+.hs-list-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  background: #fff;
+  transition: box-shadow 0.15s;
+}
+
+.hs-list-card:hover { box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+
+.hs-list-card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.hs-list-card-subtitle {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.hs-list-card-body {
+  font-size: 0.8rem;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.hs-list-card-field {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.2rem 0;
+  font-size: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.hs-list-card-field:last-child { border-bottom: none; }
+
+.hs-list-card-field-label {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.hs-list-card-field-value {
+  color: #374151;
+  text-align: right;
+}

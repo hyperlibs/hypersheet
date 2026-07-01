@@ -6,11 +6,13 @@
   <title>Hypersheet Demo</title>
   <script defer src="../src/js/providers.js"></script>
   <script defer src="../src/js/schema.js"></script>
+  <script defer src="../src/js/views.js"></script>
   <script defer src="../src/js/hypersheet.js"></script>
   <script defer src="https://unpkg.com/alpinejs@3/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
   <link rel="stylesheet" href="../src/css/hypersheet.css">
+  <link rel="stylesheet" href="../src/css/views.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f3f4f6; color: #1f2937; padding: 2rem; }
@@ -46,6 +48,7 @@
     .tab-content.active { display: block; }
     .grid-info { font-size: 0.75rem; color: #9ca3af; margin-left: auto; }
     @media (max-width: 768px) { body { padding: 1rem; } .controls { flex-direction: column; align-items: stretch; } }
+    [x-cloak] { display: none !important; }
   </style>
 </head>
 <body>
@@ -196,8 +199,122 @@
         </table>
       </div>
     </div>
+  </div>
 
-    <!-- Keyboard Legend -->
+  <!-- === VIEW SWITCHER === -->
+  <div class="hs-view-bar" x-data="{}">
+    <span style="font-weight:600;font-size:0.85rem;color:#374151;">View:</span>
+    <button class="hs-view-btn" :class="{ active: gridView === 'table' }" @click="switchView('table')">📋 Table</button>
+    <button class="hs-view-btn" :class="{ active: gridView === 'calendar' }" @click="switchView('calendar')">📅 Calendar</button>
+    <button class="hs-view-btn" :class="{ active: gridView === 'list' }" @click="switchView('list')">📇 List</button>
+  </div>
+
+  <!-- === CALENDAR VIEW === -->
+  <div x-show="gridView === 'calendar'" x-cloak style="margin-bottom:1rem;">
+    <div class="hs-cal-nav">
+      <button class="hs-cal-nav-btn" @click="calPrev">◀</button>
+      <span class="hs-cal-label" x-text="calRange.label"></span>
+      <button class="hs-cal-nav-btn" @click="calNext">▶</button>
+      <span style="margin-left:0.5rem;"></span>
+      <button class="hs-cal-preset-btn" :class="{ active: calMode === 'today' }" @click="calSetMode('today')">Today</button>
+      <button class="hs-cal-preset-btn" :class="{ active: calMode === 'this_week' }" @click="calSetMode('this_week')">Week</button>
+      <button class="hs-cal-preset-btn" :class="{ active: calMode === 'this_month' }" @click="calSetMode('this_month')">Month</button>
+      <button class="hs-cal-preset-btn" :class="{ active: calMode === 'this_quarter' }" @click="calSetMode('this_quarter')">Quarter</button>
+    </div>
+
+    <!-- Month grid -->
+    <div class="grid-wrapper" style="margin-top:0.75rem;" x-show="['today','this_week','this_month'].includes(calMode)">
+      <table class="hs-calendar">
+        <thead>
+          <tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>
+        </thead>
+        <tbody>
+          <template x-for="week in calWeeks" :key="'w' + calWeeks.indexOf(week)">
+            <tr>
+              <template x-for="cell in week" :key="cell ? cell.day : 'e'">
+                <td>
+                  <template x-if="cell">
+                    <div>
+                      <div class="hs-cal-day-num" :class="{ today: cell.isToday }" x-text="cell.day"></div>
+                      <template x-for="item in (calItemsByDate[calDateKey(cell.date)] || [])" :key="item.id">
+                        <div class="hs-cal-item" :class="item.status === 'Active' ? 'success' : (item.status === 'Paused' ? 'warning' : 'danger')"
+                             x-text="item.name" :title="item.name + '\n' + (item.email || '')"></div>
+                      </template>
+                    </div>
+                  </template>
+                </td>
+              </template>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Quarter view -->
+    <div class="grid-wrapper" style="margin-top:0.75rem;" x-show="calMode === 'this_quarter'" x-data="{}">
+      <div class="hs-cal-quarter">
+        <template x-for="(m, mi) in calQuarterMonths" :key="mi">
+          <div class="hs-cal-month-col">
+            <h4 x-text="m.name"></h4>
+            <table class="hs-calendar">
+              <thead><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead>
+              <tbody>
+                <template x-for="week in m.weeks" :key="'qw' + m.weeks.indexOf(week)">
+                  <tr>
+                    <template x-for="cell in week" :key="cell ? cell.day : 'e'">
+                      <td>
+                        <template x-if="cell">
+                          <div>
+                            <div class="hs-cal-day-num" :class="{ today: cell.isToday }" x-text="cell.day"></div>
+                            <template x-for="item in (calItemsByDate[calDateKey(cell.date)] || [])" :key="item.id">
+                              <div class="hs-cal-item" :class="item.status === 'Active' ? 'success' : (item.status === 'Paused' ? 'warning' : 'danger')"
+                                   x-text="item.name" :title="item.name"></div>
+                            </template>
+                          </div>
+                        </template>
+                      </td>
+                    </template>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- === LIST VIEW === -->
+  <div x-show="gridView === 'list'" x-cloak style="margin-bottom:1rem;">
+    <div class="hs-list-view">
+      <template x-for="(row, rIdx) in rows" :key="row.id">
+        <div class="hs-list-card">
+          <div class="hs-list-card-title" x-text="row.name"></div>
+          <div class="hs-list-card-subtitle" x-text="row.email"></div>
+          <div class="hs-list-card-body">
+            <div class="hs-list-card-field">
+              <span class="hs-list-card-field-label">Status</span>
+              <span class="hs-list-card-field-value" x-text="row.status"></span>
+            </div>
+            <div class="hs-list-card-field">
+              <span class="hs-list-card-field-label">Tier</span>
+              <span class="hs-list-card-field-value" x-text="row.tier"></span>
+            </div>
+            <div class="hs-list-card-field">
+              <span class="hs-list-card-field-label">Tasks</span>
+              <span class="hs-list-card-field-value" x-text="row.tasks.filter(t => t.done).length + '/' + row.tasks.length"></span>
+            </div>
+            <div class="hs-list-card-field">
+              <span class="hs-list-card-field-label">Date</span>
+              <span class="hs-list-card-field-value" x-text="row.date || '—'"></span>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Keyboard Legend -->
     <div class="legend">
       <span class="key-group"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
       <span class="key-group"><kbd>Enter</kbd> Edit</span>
@@ -537,6 +654,7 @@ providers: {
 function demoApp() {
   return {
     tab: 'grid',
+    gridView: 'table',
     rows: [],
     gridActiveRow: 0,
     gridActiveCol: 0,
@@ -548,6 +666,15 @@ function demoApp() {
     schemaRows: [],
     schemaErrors: [],
     schemaRole: 'admin',
+
+    // Calendar state
+    calMode: 'this_month',
+    calRef: null,
+    calRange: { label: '' },
+    calWeeks: [],
+    calItemsByDate: {},
+    calQuarterMonths: [],
+    calQuarterInfo: {},
 
     shortcuts: [
       { keys: '←&nbsp;→&nbsp;↑&nbsp;↓', action: 'Navigate between cells' },
@@ -573,6 +700,10 @@ function demoApp() {
       this.resetGrid();
       this.resetProviderGrid();
       this.resetSchemaGrid();
+
+      // Init calendar
+      this.calRef = new Date();
+      this.calRebuild();
 
       // Track grid state from the hypersheet component
       this.$watch('tab', () => {
@@ -615,6 +746,77 @@ function demoApp() {
       return el?._x_dataStack?.[0];
     },
 
+    // ---- View Management ----
+    switchView(view) {
+      this.gridView = view;
+      if (view === 'calendar') this.calRebuild();
+    },
+
+    calDateKey(d) {
+      var y = d.getFullYear();
+      var m = (d.getMonth() + 1);
+      var day = d.getDate();
+      return y + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day);
+    },
+
+    calSetMode(mode) {
+      this.calMode = mode;
+      this.calRef = new Date();
+      this.calRebuild();
+    },
+
+    calPrev() {
+      var d = this.calRange.start || this.calRef;
+      if (this.calMode === 'this_month') {
+        this.calRef = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+      } else if (this.calMode === 'this_week' || this.calMode === 'today') {
+        this.calRef = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7);
+      } else if (this.calMode === 'this_quarter') {
+        this.calRef = new Date(d.getFullYear(), d.getMonth() - 3, 1);
+      }
+      this.calRebuild();
+    },
+
+    calNext() {
+      var d = this.calRange.start || this.calRef;
+      if (this.calMode === 'this_month') {
+        this.calRef = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+      } else if (this.calMode === 'this_week' || this.calMode === 'today') {
+        this.calRef = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7);
+      } else if (this.calMode === 'this_quarter') {
+        this.calRef = new Date(d.getFullYear(), d.getMonth() + 3, 1);
+      }
+      this.calRebuild();
+    },
+
+    calRebuild() {
+      if (typeof HypersheetViews === 'undefined') return;
+      var V = HypersheetViews;
+      this.calRange = V.getDateRange(this.calMode, this.calRef);
+
+      if (this.calMode === 'this_quarter') {
+        var q = Math.floor(this.calRange.start.getMonth() / 3) + 1;
+        var y = this.calRange.start.getFullYear();
+        this.calQuarterInfo = { year: y, quarter: q };
+        var names = V.getQuarterMonths(y, q);
+        this.calQuarterMonths = [];
+        for (var i = 0; i < 3; i++) {
+          this.calQuarterMonths.push({
+            name: names[i],
+            weeks: V.getMonthGrid(y, (q - 1) * 3 + i),
+          });
+        }
+        this.calWeeks = [];
+      } else if (this.calMode === 'today' || this.calMode === 'this_week') {
+        this.calWeeks = V.getWeekGrid(this.calRange.start);
+      } else {
+        this.calWeeks = V.getMonthGrid(this.calRange.start.getFullYear(), this.calRange.start.getMonth());
+      }
+
+      // Group rows by date
+      this.calItemsByDate = V.groupByDate(this.rows, 'date', this.calRange);
+    },
+
     // ---- Row Data Management ----
     addRow() {
       const n = this.rows.length + 1;
@@ -624,6 +826,7 @@ function demoApp() {
         email: 'user' + n + '@example.com',
         status: 'Active',
         tier: 'Free',
+        date: new Date().toISOString().slice(0, 10),
         tasks: [{ id: 't-new-' + n, label: 'New task', done: false }],
       });
       this.setLastAction('Row added');
@@ -639,12 +842,14 @@ function demoApp() {
     },
 
     resetGrid() {
+      var today = new Date();
+      var d = function (offset) { var dt = new Date(today); dt.setDate(dt.getDate() + offset); return dt.toISOString().slice(0, 10); };
       this.rows = [
-        { id: 'r1', name: 'Alice Johnson', email: 'alice@example.com', status: 'Active', tier: 'Enterprise', tasks: [{ id: 't1', label: 'Setup CI/CD', done: true }, { id: 't2', label: 'Write docs', done: false }] },
-        { id: 'r2', name: 'Bob Smith', email: 'bob@example.com', status: 'Paused', tier: 'Premium', tasks: [{ id: 't3', label: 'Review PR', done: false }] },
-        { id: 'r3', name: 'Carol Davis', email: 'carol@example.com', status: 'Active', tier: 'Free', tasks: [{ id: 't4', label: 'Fix bug #42', done: true }, { id: 't5', label: 'Deploy v2', done: false }] },
-        { id: 'r4', name: 'Dave Wilson', email: 'dave@example.com', status: 'Archived', tier: 'Enterprise', tasks: [{ id: 't6', label: 'Audit logs', done: true }] },
-        { id: 'r5', name: 'Eve Martin', email: 'eve@example.com', status: 'Active', tier: 'Premium', tasks: [{ id: 't7', label: 'Update deps', done: false }, { id: 't8', label: 'Write tests', done: false }] },
+        { id: 'r1', name: 'Alice Johnson', email: 'alice@example.com', status: 'Active', tier: 'Enterprise', date: d(-2), tasks: [{ id: 't1', label: 'Setup CI/CD', done: true }, { id: 't2', label: 'Write docs', done: false }] },
+        { id: 'r2', name: 'Bob Smith', email: 'bob@example.com', status: 'Paused', tier: 'Premium', date: d(0), tasks: [{ id: 't3', label: 'Review PR', done: false }] },
+        { id: 'r3', name: 'Carol Davis', email: 'carol@example.com', status: 'Active', tier: 'Free', date: d(1), tasks: [{ id: 't4', label: 'Fix bug #42', done: true }, { id: 't5', label: 'Deploy v2', done: false }] },
+        { id: 'r4', name: 'Dave Wilson', email: 'dave@example.com', status: 'Archived', tier: 'Enterprise', date: d(3), tasks: [{ id: 't6', label: 'Audit logs', done: true }] },
+        { id: 'r5', name: 'Eve Martin', email: 'eve@example.com', status: 'Active', tier: 'Premium', date: d(5), tasks: [{ id: 't7', label: 'Update deps', done: false }, { id: 't8', label: 'Write tests', done: false }] },
       ];
       this.setLastAction('Grid reset');
     },
