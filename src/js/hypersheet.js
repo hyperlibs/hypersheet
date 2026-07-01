@@ -58,6 +58,12 @@ document.addEventListener('alpine:init', () => {
     // Stored as "row:col" -> { bold, underline, highlight }
     cellFormats: {},
 
+    // --- Selection State ---
+    selectionOrigin: null,
+    selectionRange: null,
+    isSelecting: false,
+    selectionSummary: null,
+
     // --- Prompt Configuration ---
     promptOnClear: config.promptOnClear !== undefined ? config.promptOnClear : false,
     promptOnClearRow: config.promptOnClearRow !== undefined ? config.promptOnClearRow : true,
@@ -135,6 +141,11 @@ document.addEventListener('alpine:init', () => {
           });
         }
       }
+
+      // Document mouseup to finalize selection drag
+      document.addEventListener('mouseup', () => {
+        if (this.isSelecting) this.endSelection();
+      });
     },
 
     // --- Provider Integration ---
@@ -309,6 +320,112 @@ document.addEventListener('alpine:init', () => {
 
     isFocused(r, c) {
       return this.activeRow === r && this.activeCol === c;
+    },
+
+    // --- Selection ---
+    isSelected(r, c) {
+      if (!this.selectionRange) return false;
+      return r >= this.selectionRange.minRow && r <= this.selectionRange.maxRow
+        && c >= this.selectionRange.minCol && c <= this.selectionRange.maxCol;
+    },
+
+    _setSelection(fromRow, fromCol, toRow, toCol) {
+      this.selectionRange = {
+        minRow: Math.min(fromRow, toRow),
+        maxRow: Math.max(fromRow, toRow),
+        minCol: Math.min(fromCol, toCol),
+        maxCol: Math.max(fromCol, toCol),
+      };
+      this._updateSelectionSummary();
+      this.$el.dispatchEvent(new CustomEvent('selection-changed', {
+        detail: { range: this.selectionRange },
+        bubbles: true,
+      }));
+    },
+
+    _clearSelection() {
+      this.selectionRange = null;
+      this.selectionOrigin = null;
+      this.isSelecting = false;
+      this.selectionSummary = null;
+      this.$el.dispatchEvent(new CustomEvent('selection-changed', {
+        detail: { range: null },
+        bubbles: true,
+      }));
+    },
+
+    handleCellMouseDown(row, col, event) {
+      if (event.shiftKey && this.selectionOrigin) {
+        this._setSelection(this.selectionOrigin.row, this.selectionOrigin.col, row, col);
+        this.activeRow = row;
+        this.activeCol = col;
+        this.focusedKey = row + ':' + col;
+        return;
+      }
+      this._clearSelection();
+      this.selectionOrigin = { row: row, col: col };
+      this.isSelecting = true;
+      this._setSelection(row, col, row, col);
+      this.activeRow = row;
+      this.activeCol = col;
+      this.focusedKey = row + ':' + col;
+      this.editMode = false;
+    },
+
+    handleCellMouseEnter(row, col) {
+      if (!this.isSelecting || !this.selectionOrigin) return;
+      this._setSelection(this.selectionOrigin.row, this.selectionOrigin.col, row, col);
+    },
+
+    endSelection() {
+      if (this.isSelecting) {
+        this.isSelecting = false;
+      }
+    },
+
+    _getSelectedValues() {
+      if (!this.selectionRange) return [];
+      var values = [];
+      for (var r = this.selectionRange.minRow; r <= this.selectionRange.maxRow; r++) {
+        for (var c = this.selectionRange.minCol; c <= this.selectionRange.maxCol; c++) {
+          var input = this.$el.querySelector(
+            '[data-row="' + r + '"][data-col="' + c + '"] .hs-cell-input'
+          );
+          if (input) values.push(input.value);
+        }
+      }
+      return values;
+    },
+
+    _updateSelectionSummary() {
+      var raw = this._getSelectedValues();
+      var count = raw.length;
+      if (count === 0) { this.selectionSummary = null; return; }
+
+      var sum = 0, numCount = 0, min = Infinity, max = -Infinity;
+      for (var i = 0; i < count; i++) {
+        var num = parseFloat(raw[i]);
+        if (!isNaN(num) && raw[i].trim() !== '') {
+          numCount++;
+          sum += num;
+          if (num < min) min = num;
+          if (num > max) max = num;
+        }
+      }
+
+      if (numCount === 0) {
+        this.selectionSummary = { count: count, numeric: 0 };
+        return;
+      }
+
+      this.selectionSummary = {
+        count: count,
+        numeric: numCount,
+        sum: sum,
+        avg: sum / numCount,
+        min: min,
+        max: max,
+      };
     },
 
     // --- Edit Mode ---
@@ -549,28 +666,60 @@ document.addEventListener('alpine:init', () => {
       switch (e.key) {
         case 'ArrowUp':
           e.preventDefault();
-          if (this.activeRow > 0) this.activeRow--;
+          if (shift) {
+            var prevRow = this.activeRow;
+            if (this.activeRow > 0) this.activeRow--;
+            if (!this.selectionOrigin) this.selectionOrigin = { row: prevRow, col: this.activeCol };
+            this._setSelection(this.selectionOrigin.row, this.selectionOrigin.col, this.activeRow, this.activeCol);
+          } else {
+            if (!isInput) this._clearSelection();
+            if (this.activeRow > 0) this.activeRow--;
+          }
           this._updateFocusedKey();
           this.editMode = false;
           break;
 
         case 'ArrowDown':
           e.preventDefault();
-          if (this.activeRow < this.maxRows - 1) this.activeRow++;
+          if (shift) {
+            var prevRow = this.activeRow;
+            if (this.activeRow < this.maxRows - 1) this.activeRow++;
+            if (!this.selectionOrigin) this.selectionOrigin = { row: prevRow, col: this.activeCol };
+            this._setSelection(this.selectionOrigin.row, this.selectionOrigin.col, this.activeRow, this.activeCol);
+          } else {
+            if (!isInput) this._clearSelection();
+            if (this.activeRow < this.maxRows - 1) this.activeRow++;
+          }
           this._updateFocusedKey();
           this.editMode = false;
           break;
 
         case 'ArrowLeft':
           e.preventDefault();
-          if (this.activeCol > 0) this.activeCol--;
+          if (shift) {
+            var prevCol = this.activeCol;
+            if (this.activeCol > 0) this.activeCol--;
+            if (!this.selectionOrigin) this.selectionOrigin = { row: this.activeRow, col: prevCol };
+            this._setSelection(this.selectionOrigin.row, this.selectionOrigin.col, this.activeRow, this.activeCol);
+          } else {
+            if (!isInput) this._clearSelection();
+            if (this.activeCol > 0) this.activeCol--;
+          }
           this._updateFocusedKey();
           this.editMode = false;
           break;
 
         case 'ArrowRight':
           e.preventDefault();
-          if (this.activeCol < this.maxCols - 1) this.activeCol++;
+          if (shift) {
+            var prevCol = this.activeCol;
+            if (this.activeCol < this.maxCols - 1) this.activeCol++;
+            if (!this.selectionOrigin) this.selectionOrigin = { row: this.activeRow, col: prevCol };
+            this._setSelection(this.selectionOrigin.row, this.selectionOrigin.col, this.activeRow, this.activeCol);
+          } else {
+            if (!isInput) this._clearSelection();
+            if (this.activeCol < this.maxCols - 1) this.activeCol++;
+          }
           this._updateFocusedKey();
           this.editMode = false;
           break;

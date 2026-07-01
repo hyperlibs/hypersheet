@@ -117,8 +117,9 @@
                 <!-- Name (Text) -->
                 <td class="hs-cell hs-cell-text"
                     :data-row="rIdx" data-col="0"
-                    :class="focusedKey === rIdx + ':0' ? 'hs-focused' : ''"
-                    @click="focusCell(rIdx, 0, false); $dispatch('cell-focus', {row:rIdx, col:0})">
+                    :class="{'hs-focused': focusedKey === rIdx + ':0', 'hs-selected': isSelected(rIdx, 0)}"
+                    @mousedown="handleCellMouseDown(rIdx, 0, $event); $dispatch('cell-focus', {row:rIdx, col:0})"
+                    @mouseenter="handleCellMouseEnter(rIdx, 0)">
                   <input type="text" class="hs-cell-input" x-model="row.name"
                          @blur="row.name = $el.value">
                 </td>
@@ -126,8 +127,9 @@
                 <!-- Email (Text) -->
                 <td class="hs-cell hs-cell-text"
                     :data-row="rIdx" data-col="1"
-                    :class="focusedKey === rIdx + ':1' ? 'hs-focused' : ''"
-                    @click="focusCell(rIdx, 1, false); $dispatch('cell-focus', {row:rIdx, col:1})">
+                    :class="{'hs-focused': focusedKey === rIdx + ':1', 'hs-selected': isSelected(rIdx, 1)}"
+                    @mousedown="handleCellMouseDown(rIdx, 1, $event); $dispatch('cell-focus', {row:rIdx, col:1})"
+                    @mouseenter="handleCellMouseEnter(rIdx, 1)">
                   <input type="text" class="hs-cell-input" x-model="row.email"
                          @blur="row.email = $el.value">
                 </td>
@@ -135,8 +137,9 @@
                 <!-- Status (Chip) -->
                 <td class="hs-cell hs-cell-chip"
                     :data-row="rIdx" data-col="2"
-                    :class="focusedKey === rIdx + ':2' ? 'hs-focused' : ''"
-                    @click="focusCell(rIdx, 2, false); $dispatch('cell-focus', {row:rIdx, col:2})"
+                    :class="{'hs-focused': focusedKey === rIdx + ':2', 'hs-selected': isSelected(rIdx, 2)}"
+                    @mousedown="handleCellMouseDown(rIdx, 2, $event); $dispatch('cell-focus', {row:rIdx, col:2})"
+                    @mouseenter="handleCellMouseEnter(rIdx, 2)"
                     x-data="{ open: false }">
                   <div @click="open = !open" class="hs-cursor-pointer hs-select-none">
                     <span class="hs-chip"
@@ -157,8 +160,9 @@
                 <!-- Tier (Dropdown) -->
                 <td class="hs-cell hs-cell-dropdown"
                     :data-row="rIdx" data-col="3"
-                    :class="focusedKey === rIdx + ':3' ? 'hs-focused' : ''"
-                    @click="focusCell(rIdx, 3, false); $dispatch('cell-focus', {row:rIdx, col:3})"
+                    :class="{'hs-focused': focusedKey === rIdx + ':3', 'hs-selected': isSelected(rIdx, 3)}"
+                    @mousedown="handleCellMouseDown(rIdx, 3, $event); $dispatch('cell-focus', {row:rIdx, col:3})"
+                    @mouseenter="handleCellMouseEnter(rIdx, 3)"
                     x-data="{ open: false }">
                   <div @click="open = !open" class="hs-dropdown-trigger">
                     <span x-text="row.tier"></span>
@@ -174,8 +178,9 @@
                 <!-- Tasks (Checklist) -->
                 <td class="hs-cell"
                     :data-row="rIdx" data-col="4"
-                    :class="focusedKey === rIdx + ':4' ? 'hs-focused' : ''"
-                    @click="focusCell(rIdx, 4, false); $dispatch('cell-focus', {row:rIdx, col:4})">
+                    :class="{'hs-focused': focusedKey === rIdx + ':4', 'hs-selected': isSelected(rIdx, 4)}"
+                    @mousedown="handleCellMouseDown(rIdx, 4, $event); $dispatch('cell-focus', {row:rIdx, col:4})"
+                    @mouseenter="handleCellMouseEnter(rIdx, 4)">
                   <div class="hs-checklist">
                     <template x-for="(task, tIdx) in row.tasks" :key="tIdx">
                       <label>
@@ -510,6 +515,17 @@ providers: {
     <span>📍 Cell: (<span x-text="gridActiveRow + 1"></span>, <span x-text="gridActiveCol + 1"></span>)</span>
     <span>📝 Edit mode: <span x-text="gridEditMode ? 'ON' : 'OFF'" :style="gridEditMode ? 'color:#059669;font-weight:600' : ''"></span></span>
     <span>📊 Rows: <span x-text="rows.length"></span></span>
+    <template x-if="selectionSummary">
+      <span style="font-weight:600;color:#6366f1;">
+        # <span x-text="selectionSummary.count"></span>
+        <template x-if="selectionSummary.numeric">
+          <span>&nbsp;|&nbsp; ∑ <span x-text="selectionSummary.sum.toFixed(2)"></span>
+          &nbsp;|&nbsp; ∅ <span x-text="selectionSummary.avg.toFixed(2)"></span>
+          &nbsp;|&nbsp; ↓ <span x-text="selectionSummary.min"></span>
+          &nbsp;|&nbsp; ↑ <span x-text="selectionSummary.max"></span></span>
+        </template>
+      </span>
+    </template>
     <span x-show="lastAction" x-text="'⚡ ' + lastAction"></span>
   </div>
 
@@ -586,16 +602,17 @@ function demoApp() {
 
     _syncGridState() {
       const grid = document.getElementById('main-grid');
-      if (!grid || !grid.__x) return;
-      const data = grid.__x.getData();
+      if (!grid || !grid._x_dataStack) return;
+      const data = grid._x_dataStack[0];
       this.gridActiveRow = data.activeRow;
       this.gridActiveCol = data.activeCol;
       this.gridEditMode = data.editMode;
+      this.selectionSummary = data.selectionSummary;
     },
 
     _getGrid() {
       const el = document.getElementById('main-grid');
-      return el?.__x?.getData();
+      return el?._x_dataStack?.[0];
     },
 
     // ---- Row Data Management ----
