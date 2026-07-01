@@ -17,8 +17,14 @@ module.exports = defineConfig({
     ['json', { outputFile: '../../test-results/results.json' }],
     ['list'],
   ],
+  webServer: {
+    command: 'node serve.js 8769',
+    url: 'http://localhost:8769/demo/',
+    reuseExistingServer: true,
+    timeout: 15000,
+  },
   use: {
-    baseURL: 'http://localhost:8000',
+    baseURL: 'http://localhost:8769/demo/',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

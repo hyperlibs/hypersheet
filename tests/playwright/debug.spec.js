@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-const URL = 'http://localhost:8769';
+const URL = 'http://localhost:8769/demo/';
 
 test('full navigation test', async ({ page }) => {
   await page.goto(URL, { waitUntil: 'networkidle' });

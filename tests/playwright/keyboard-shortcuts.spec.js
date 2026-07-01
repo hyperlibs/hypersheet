@@ -11,7 +11,7 @@
 const { test, expect } = require('@playwright/test');
 const { HypersheetTest } = require('../../src/js/playwright-helper.js');
 
-const DEFAULT_URL = process.env.GRID_URL || 'http://localhost:8769';
+const DEFAULT_URL = process.env.GRID_URL || 'http://localhost:8769/demo/';
 
 test.describe('Hypersheet Keyboard Navigation', () => {
   let grid;

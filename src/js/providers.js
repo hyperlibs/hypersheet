@@ -70,9 +70,9 @@
   }
 
   // -----------------------------------------------------------------------
-  //  StaticProvider  — inline data
+  //  InlineProvider  — inline data (aliased as StaticProvider for compat)
   // -----------------------------------------------------------------------
-  class StaticProvider extends BaseProvider {
+  class InlineProvider extends BaseProvider {
     constructor(config) {
       super(config);
       this.items = config.items || [];
@@ -80,6 +80,8 @@
 
     async fetch() { return { success: true, items: this.items }; }
   }
+
+  var StaticProvider = InlineProvider;
 
   // -----------------------------------------------------------------------
   //  MemoryProvider  — mutable runtime data
@@ -230,6 +232,180 @@
   }
 
   // -----------------------------------------------------------------------
+  //  SqlProvider  — SQL database via WebSQL / better-sqlite3 (Electron/Tauri)
+  // -----------------------------------------------------------------------
+  class SqlProvider extends BaseProvider {
+    constructor(config) {
+      super(config);
+      this.table = config.table;
+      this.columns = config.columns || ['id', 'label'];
+      this.value = config.value || this.columns[0] || 'id';
+      this.label = config.label || this.columns[1] || 'label';
+      this.where = config.where || null;
+      this.orderBy = config.orderBy || null;
+      this.driver = config.driver || 'auto';
+      this._db = null;
+      this._driverInstance = null;
+    }
+
+    async fetch(params) {
+      var cached = this._checkCache();
+      if (cached) return cached;
+      try {
+        var items = await this._query(params);
+        var result = { success: true, items: items };
+        this._setCache(result);
+        return result;
+      } catch (e) {
+        return { success: false, items: [], error: e.message };
+      }
+    }
+
+    async _query(params) {
+      var sql = 'SELECT ' + this.value + ', ' + this.label + ' FROM ' + this._escapeId(this.table);
+      var conditions = [];
+      var bindings = [];
+
+      if (this.where) {
+        Object.keys(this.where).forEach(function (k) {
+          conditions.push(this._escapeId(k) + ' = ?');
+          bindings.push(this.where[k]);
+        }.bind(this));
+      }
+      if (params) {
+        Object.keys(params).forEach(function (k) {
+          conditions.push(this._escapeId(k) + ' = ?');
+          bindings.push(params[k]);
+        }.bind(this));
+      }
+      if (conditions.length > 0) sql += ' WHERE ' + conditions.join(' AND ');
+      if (this.orderBy) sql += ' ORDER BY ' + this.orderBy;
+
+      return this._runSql(sql, bindings);
+    }
+
+    _runSql(sql, bindings) {
+      // Auto-detect environment
+      if (this.driver === 'websql' || (this.driver === 'auto' && typeof openDatabase !== 'undefined')) {
+        return this._runWebSql(sql, bindings);
+      }
+      if (this.driver === 'better-sqlite3' || (this.driver === 'auto' && typeof require !== 'undefined')) {
+        try {
+          var Database = require('better-sqlite3');
+          if (!this._db) this._db = new Database(this.table + '.db');
+          var stmt = this._db.prepare(sql);
+          return bindings.length > 0 ? stmt.all.apply(stmt, bindings) : stmt.all();
+        } catch (e) {
+          // Fall through to WebSQL if better-sqlite3 fails
+        }
+      }
+      // Fallback — return empty
+      return [];
+    }
+
+    _runWebSql(sql, bindings) {
+      return new Promise(function (resolve, reject) {
+        if (!this._db) {
+          this._db = openDatabase(this.table + '.db', '1.0', this.table, 2 * 1024 * 1024);
+        }
+        this._db.transaction(function (tx) {
+          tx.executeSql(sql, bindings, function (tx, results) {
+            var items = [];
+            for (var i = 0; i < results.rows.length; i++) {
+              var row = results.rows.item(i);
+              items.push({ value: row[this.value], label: row[this.label] });
+            }
+            resolve(items);
+          }.bind(this), function (tx, error) { reject(error); });
+        }.bind(this));
+      }.bind(this));
+    }
+
+    _escapeId(id) { return '"' + String(id).replace(/"/g, '""') + '"'; }
+
+    destroy() {
+      if (this._db && typeof this._db.close === 'function') this._db.close();
+      super.destroy();
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  //  CsvProvider  — CSV files (HTTP or local in Electron/Tauri)
+  // -----------------------------------------------------------------------
+  class CsvProvider extends BaseProvider {
+    constructor(config) {
+      super(config);
+      this.source = config.source;
+      this.delimiter = config.delimiter || ',';
+      this.hasHeader = config.hasHeader !== false;
+      this.value = config.value || 'value';
+      this.label = config.label || 'label';
+      this.valueCol = config.valueCol !== undefined ? config.valueCol : 0;
+      this.labelCol = config.labelCol !== undefined ? config.labelCol : 1;
+    }
+
+    async fetch(params) {
+      var cached = this._checkCache();
+      if (cached) return cached;
+      try {
+        var csvText = await this._loadCsv();
+        var items = this._parseCsv(csvText);
+        var result = { success: true, items: items };
+        this._setCache(result);
+        return result;
+      } catch (e) {
+        return { success: false, items: [], error: e.message };
+      }
+    }
+
+    async _loadCsv() {
+      // HTTP fetch
+      if (this.source.indexOf('http://') === 0 || this.source.indexOf('https://') === 0 || this.source.indexOf('/') === 0) {
+        var resp = await fetch(this.source);
+        return await resp.text();
+      }
+      // Local file in Electron/Tauri via fs
+      try {
+        var fs = require('fs');
+        return fs.readFileSync(this.source, 'utf-8');
+      } catch (e) {
+        throw new Error('CsvProvider: cannot read "' + this.source + '" — ' + e.message);
+      }
+    }
+
+    _parseCsv(text) {
+      var lines = text.split(/\r?\n/).filter(function (l) { return l.trim().length > 0; });
+      var startIdx = this.hasHeader ? 1 : 0;
+      var headers = this.hasHeader ? this._splitLine(lines[0]) : null;
+
+      var items = [];
+      for (var i = startIdx; i < lines.length; i++) {
+        var cols = this._splitLine(lines[i]);
+        if (headers) {
+          items.push({ value: cols[this.valueCol] || cols[0], label: cols[this.labelCol] || cols[1] || cols[0] });
+        } else {
+          items.push({ value: cols[0], label: cols[1] || cols[0] });
+        }
+      }
+      return items;
+    }
+
+    _splitLine(line) {
+      var result = [];
+      var current = '';
+      var inQuotes = false;
+      for (var i = 0; i < line.length; i++) {
+        var ch = line[i];
+        if (ch === '"') { inQuotes = !inQuotes; }
+        else if (ch === this.delimiter && !inQuotes) { result.push(current.trim()); current = ''; }
+        else { current += ch; }
+      }
+      result.push(current.trim());
+      return result;
+    }
+  }
+
+  // -----------------------------------------------------------------------
   //  ProviderRegistry
   // -----------------------------------------------------------------------
   class ProviderRegistry {
@@ -240,12 +416,15 @@
       this._globalProviders = {};
 
       // Register built-in provider types
-      this.register('static', function (c) { return new StaticProvider(c); });
+      this.register('inline', function (c) { return new InlineProvider(c); });
+      this.register('static', function (c) { return new InlineProvider(c); });
       this.register('memory', function (c) { return new MemoryProvider(c); });
       this.register('config', function (c) { return new ConfigProvider(c); });
       this.register('json', function (c) { return new JsonProvider(c); });
       this.register('api', function (c) { return new ApiProvider(c); });
       this.register('database', function (c) { return new DatabaseProvider(c); });
+      this.register('sql', function (c) { return new SqlProvider(c); });
+      this.register('csv', function (c) { return new CsvProvider(c); });
     }
 
     register(type, factory) {
@@ -256,22 +435,22 @@
     create(config) {
       var type = config.type || 'static';
       if (!this._factories[type]) {
-        console.warn('[Providers] Unknown type "' + type + '", falling back to static');
-        return new StaticProvider(config);
+        console.warn('[Providers] Unknown type "' + type + '", falling back to inline');
+        return new InlineProvider(config);
       }
       return this._factories[type](config);
     }
 
     resolve(columnConfig) {
       if (!columnConfig.provider) {
-        return new StaticProvider({ id: columnConfig.field, items: columnConfig.options || [] });
+        return new InlineProvider({ id: columnConfig.field, items: columnConfig.options || [] });
       }
       var providerConfig = typeof columnConfig.provider === 'string'
         ? this._globalProviders[columnConfig.provider]
         : columnConfig.provider;
       if (!providerConfig) {
-        console.warn('[Providers] No provider config for "' + columnConfig.field + '", using static');
-        return new StaticProvider({ id: columnConfig.field, items: columnConfig.options || [] });
+        console.warn('[Providers] No provider config for "' + columnConfig.field + '", using inline');
+        return new InlineProvider({ id: columnConfig.field, items: columnConfig.options || [] });
       }
       var provider = this.create(Object.assign({ id: columnConfig.field, field: columnConfig.field }, providerConfig));
       return provider;
@@ -324,12 +503,15 @@
 
   return {
     BaseProvider: BaseProvider,
-    StaticProvider: StaticProvider,
+    InlineProvider: InlineProvider,
+    StaticProvider: InlineProvider,
     MemoryProvider: MemoryProvider,
     ConfigProvider: ConfigProvider,
     JsonProvider: JsonProvider,
     ApiProvider: ApiProvider,
     DatabaseProvider: DatabaseProvider,
+    SqlProvider: SqlProvider,
+    CsvProvider: CsvProvider,
     ProviderRegistry: ProviderRegistry,
     registry: registry
   };

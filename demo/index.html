@@ -237,7 +237,7 @@
   <div class="tab-content" :class="{ active: tab === 'providers' }">
     <div class="section-title">
       <span>🔌 Provider-Driven Grid</span>
-      <span class="badge badge-core">config · static · memory</span>
+      <span class="badge badge-core">inline · config · memory · sql · csv · api · database</span>
     </div>
     <p style="margin-bottom:1rem;color:#6b7280;font-size:0.875rem;">
       Every column declares its data provider. The grid resolves options dynamically.
@@ -250,8 +250,8 @@
              cols: 4,
              columns: [
                { field: 'name', title: 'Name', type: 'text' },
-               { field: 'role', title: 'Role', type: 'dropdown',
-                 provider: { type: 'static', items: [
+                { field: 'role', title: 'Role', type: 'dropdown',
+                  provider: { type: 'inline', items: [
                    { value: 'admin', label: 'Administrator' },
                    { value: 'editor', label: 'Editor' },
                    { value: 'viewer', label: 'Viewer' }
@@ -265,7 +265,7 @@
                  ]}
                },
                { field: 'status', title: 'Status', type: 'chip',
-                 provider: { type: 'static', items: [
+                  provider: { type: 'inline', items: [
                    { value: 'active', label: 'Active' },
                    { value: 'pending', label: 'Pending' },
                    { value: 'inactive', label: 'Inactive' }
@@ -278,9 +278,9 @@
             <tr class="hs-header">
               <th class="hs-cell" style="width:2.5rem;min-width:2rem;"></th>
               <th class="hs-cell">Name</th>
-              <th class="hs-cell">Role <span style="font-size:0.7rem;color:#9ca3af;">(static)</span></th>
+              <th class="hs-cell">Role <span style="font-size:0.7rem;color:#9ca3af;">(inline)</span></th>
               <th class="hs-cell">Region <span style="font-size:0.7rem;color:#9ca3af;">(memory)</span></th>
-              <th class="hs-cell">Status <span style="font-size:0.7rem;color:#9ca3af;">(static)</span></th>
+              <th class="hs-cell">Status <span style="font-size:0.7rem;color:#9ca3af;">(inline)</span></th>
             </tr>
           </thead>
           <tbody>
@@ -336,21 +336,27 @@
 
     <div class="section-title" style="margin-top:2rem;"><span>📋 Provider Config</span></div>
     <pre style="background:#1f2937;color:#e5e7eb;padding:1rem;border-radius:6px;font-size:0.8rem;overflow-x:auto;"
-><span style="color:#93c5fd;">// Column-level provider (static)</span>
-{ field: 'role', type: 'dropdown',
-  provider: { type: 'static', items: [
+><span style="color:#93c5fd;">// Provider Registry — define once, reference by name</span>
+providers: {
+  roles:   { type: 'inline', items: [
     { value: 'admin', label: 'Administrator' },
     { value: 'editor', label: 'Editor' }
-  ]}
+  ]},
+  regions: { type: 'memory', items: [
+    { value: 'na',   label: 'North America' },
+    { value: 'eu',   label: 'Europe' }
+  ]},
+  doctors: { type: 'api', url: '/api/doctors' }
 }
 
-<span style="color:#93c5fd;">// Swap to config file — same grid, different source</span>
-{ field: 'role', type: 'dropdown',
-  provider: { type: 'config', source: '/data/roles.json' } }
+<span style="color:#93c5fd;">// Column references provider by name</span>
+{ field: 'role', type: 'dropdown', provider: 'roles' }
+{ field: 'region', type: 'dropdown', provider: 'regions' }
 
-<span style="color:#93c5fd;">// Swap to database — one-line change</span>
-{ field: 'role', type: 'dropdown',
-  provider: { type: 'database', table: 'roles', label: 'name', value: 'id' } }</pre>
+<span style="color:#93c5fd;">// Swap provider — one-line change in registry</span>
+{ type: 'csv', source: 'data/regions.csv' }
+{ type: 'sql', table: 'doctors', label: 'name', value: 'id' }
+{ type: 'api', url: '/api/doctors' }</pre>
   </div>
 
   <!-- === SCHEMA TAB === -->
