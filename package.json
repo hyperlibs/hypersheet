@@ -1,6 +1,6 @@
 {
   "name": "hypersheet",
-  "version": "0.1.0",
+  "version": "0.2.0-alpha",
   "description": "HTML-first, spreadsheet-like data grid component library built on Alpine.js and htmx",
   "license": "MIT",
   "author": "Hypersheet Contributors",
