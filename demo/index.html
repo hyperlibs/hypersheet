@@ -49,6 +49,15 @@
     .grid-info { font-size: 0.75rem; color: #9ca3af; margin-left: auto; }
     @media (max-width: 768px) { body { padding: 1rem; } .controls { flex-direction: column; align-items: stretch; } }
     [x-cloak] { display: none !important; }
+    .hs-pagination { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 0; font-size: 0.8rem; flex-wrap: wrap; }
+    .hs-pagination .hs-page-btn { padding: 0.25rem 0.6rem; border: 1px solid #d1d5db; border-radius: 0.25rem; background: #fff; cursor: pointer; color: #374151; font-size: 0.8rem; }
+    .hs-pagination .hs-page-btn:hover { background: #f3f4f6; }
+    .hs-pagination .hs-page-btn.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+    .hs-pagination .hs-page-btn:disabled { opacity: 0.4; cursor: default; }
+    .hs-pagination-toggle { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: #6b7280; }
+    .hs-pagination-toggle button { padding: 0.2rem 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem; background: #fff; cursor: pointer; font-size: 0.7rem; color: #374151; }
+    .hs-pagination-toggle button.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+    .hs-pagination-toggle button:hover:not(.active) { background: #f3f4f6; }
   </style>
 </head>
 <body>
@@ -86,7 +95,11 @@
       <button @click="removeRow" :disabled="rows.length <= 1">－ Remove Last</button>
       <button @click="resetGrid">↺ Reset</button>
       <span style="font-size:0.75rem;color:#9ca3af;">
-        <span x-text="rows.length"></span> rows · Cell: (<span x-text="gridActiveRow + 1"></span>, <span x-text="gridActiveCol + 1"></span>)
+        <span x-text="rows.length"></span> / <span x-text="totalRows"></span> rows · Cell: (<span x-text="gridActiveRow + 1"></span>, <span x-text="gridActiveCol + 1"></span>)
+      </span>
+      <span class="hs-pagination-toggle">
+        <button :class="{ active: paginationMode === 'scroll' }" @click="setPaginationMode('scroll')" title="Continuous scroll">↕ Scroll</button>
+        <button :class="{ active: paginationMode === 'pages' }" @click="setPaginationMode('pages')" title="Numbered pages">⊞ Pages</button>
       </span>
       <button @click="showToast('Press ? for keyboard shortcuts')" style="margin-left:auto;">⌨ Shortcuts</button>
     </div>
@@ -121,7 +134,7 @@
 
                 <!-- Name (Text) -->
                 <td class="hs-cell hs-cell-text"
-                    :data-row="rIdx" data-col="0"
+                    :data-row="rIdx" data-col="0" data-field="name"
                     :class="{'hs-focused': focusedKey === rIdx + ':0', 'hs-selected': isSelected(rIdx, 0)}"
                     @mousedown="handleCellMouseDown(rIdx, 0, $event); $dispatch('cell-focus', {row:rIdx, col:0})"
                     @mouseenter="handleCellMouseEnter(rIdx, 0)">
@@ -131,7 +144,7 @@
 
                 <!-- Email (Text) -->
                 <td class="hs-cell hs-cell-text"
-                    :data-row="rIdx" data-col="1"
+                    :data-row="rIdx" data-col="1" data-field="email"
                     :class="{'hs-focused': focusedKey === rIdx + ':1', 'hs-selected': isSelected(rIdx, 1)}"
                     @mousedown="handleCellMouseDown(rIdx, 1, $event); $dispatch('cell-focus', {row:rIdx, col:1})"
                     @mouseenter="handleCellMouseEnter(rIdx, 1)">
@@ -141,7 +154,7 @@
 
                 <!-- Status (Chip) -->
                 <td class="hs-cell hs-cell-chip"
-                    :data-row="rIdx" data-col="2"
+                    :data-row="rIdx" data-col="2" data-field="status"
                     :class="{'hs-focused': focusedKey === rIdx + ':2', 'hs-selected': isSelected(rIdx, 2)}"
                     @mousedown="handleCellMouseDown(rIdx, 2, $event); $dispatch('cell-focus', {row:rIdx, col:2})"
                     @mouseenter="handleCellMouseEnter(rIdx, 2)"
@@ -164,7 +177,7 @@
 
                 <!-- Tier (Dropdown) -->
                 <td class="hs-cell hs-cell-dropdown"
-                    :data-row="rIdx" data-col="3"
+                    :data-row="rIdx" data-col="3" data-field="tier"
                     :class="{'hs-focused': focusedKey === rIdx + ':3', 'hs-selected': isSelected(rIdx, 3)}"
                     @mousedown="handleCellMouseDown(rIdx, 3, $event); $dispatch('cell-focus', {row:rIdx, col:3})"
                     @mouseenter="handleCellMouseEnter(rIdx, 3)"
@@ -182,7 +195,7 @@
 
                 <!-- Tasks (Checklist) -->
                 <td class="hs-cell"
-                    :data-row="rIdx" data-col="4"
+                    :data-row="rIdx" data-col="4" data-field="tasks"
                     :class="{'hs-focused': focusedKey === rIdx + ':4', 'hs-selected': isSelected(rIdx, 4)}"
                     @mousedown="handleCellMouseDown(rIdx, 4, $event); $dispatch('cell-focus', {row:rIdx, col:4})"
                     @mouseenter="handleCellMouseEnter(rIdx, 4)">
@@ -198,7 +211,7 @@
 
                 <!-- Date (Date Picker) -->
                 <td class="hs-cell hs-cell-date"
-                    :data-row="rIdx" data-col="5"
+                    :data-row="rIdx" data-col="5" data-field="date"
                     :class="{'hs-focused': focusedKey === rIdx + ':5', 'hs-selected': isSelected(rIdx, 5)}"
                     @mousedown="handleCellMouseDown(rIdx, 5, $event); $dispatch('cell-focus', {row:rIdx, col:5})"
                     @mouseenter="handleCellMouseEnter(rIdx, 5)">
@@ -237,7 +250,7 @@
 
                 <!-- Date Range -->
                 <td class="hs-cell hs-cell-daterange"
-                    :data-row="rIdx" data-col="6"
+                    :data-row="rIdx" data-col="6" data-field="daterange"
                     :class="{'hs-focused': focusedKey === rIdx + ':6', 'hs-selected': isSelected(rIdx, 6)}"
                     @mousedown="handleCellMouseDown(rIdx, 6, $event); $dispatch('cell-focus', {row:rIdx, col:6})"
                     @mouseenter="handleCellMouseEnter(rIdx, 6)">
@@ -259,6 +272,28 @@
             </template>
           </tbody>
         </table>
+
+        <!-- Pagination: Pages mode -->
+        <div class="hs-pagination" x-show="paginationMode === 'pages'" x-cloak>
+          <button class="hs-page-btn" @click="goToPage(page - 1)" :disabled="page <= 0">◀ Prev</button>
+          <template x-for="(p, pi) in pageNumbers()" :key="pi">
+            <template x-if="p === '...'">
+              <span style="color:#9ca3af;">…</span>
+            </template>
+            <template x-if="p !== '...'">
+              <button class="hs-page-btn" :class="{ active: page === p }" @click="goToPage(p)" x-text="p + 1"></button>
+            </template>
+          </template>
+          <button class="hs-page-btn" @click="goToPage(page + 1)" :disabled="page >= Math.ceil(totalRows / pageSize) - 1">Next ▶</button>
+          <span style="font-size:0.7rem;color:#9ca3af;">Page <span x-text="page + 1"></span> of <span x-text="Math.ceil(totalRows / pageSize)"></span></span>
+        </div>
+
+        <!-- Scroll mode: load indicator -->
+        <div x-show="paginationMode === 'scroll' && rows.length < totalRows" x-cloak
+             style="text-align:center;padding:1rem 0;font-size:0.75rem;color:#9ca3af;">
+          <span x-show="_scrollLoading">↻ Loading more rows...</span>
+          <span x-show="!_scrollLoading">↓ Scroll down to load more</span>
+        </div>
       </div>
     </div>
   </div>
@@ -693,7 +728,7 @@ providers: {
   <div class="status-bar">
     <span>📍 Cell: (<span x-text="gridActiveRow + 1"></span>, <span x-text="gridActiveCol + 1"></span>)</span>
     <span>📝 Edit mode: <span x-text="gridEditMode ? 'ON' : 'OFF'" :style="gridEditMode ? 'color:#059669;font-weight:600' : ''"></span></span>
-    <span>📊 Rows: <span x-text="rows.length"></span></span>
+    <span>📊 Rows: <span x-text="rows.length"></span> / <span x-text="totalRows"></span></span>
     <template x-if="selectionSummary">
       <span style="font-weight:600;color:#6366f1;">
         # <span x-text="selectionSummary.count"></span>
@@ -717,6 +752,11 @@ function demoApp() {
   return {
     tab: 'grid',
     gridView: 'table',
+    paginationMode: 'scroll',  // 'pages' | 'scroll'
+    page: 0,
+    pageSize: 10,
+    totalRows: 0,
+    _allRows: [],
     rows: [],
     gridActiveRow: 0,
     gridActiveCol: 0,
@@ -759,6 +799,7 @@ function demoApp() {
     ],
 
     init() {
+      this._generateDataset(100);
       this.resetGrid();
       this.resetProviderGrid();
       this.resetSchemaGrid();
@@ -791,6 +832,106 @@ function demoApp() {
 
       // Periodically sync grid state for status bar
       setInterval(() => this._syncGridState(), 300);
+    },
+
+    _generateDataset(count) {
+      var statuses = ['Active', 'Paused', 'Archived'];
+      var tiers = ['Free', 'Premium', 'Enterprise'];
+      var firstNames = ['Alice','Bob','Carol','Dave','Eve','Frank','Grace','Henry','Iris','Jack','Kate','Leo','Mia','Noah','Olivia','Paul','Quinn','Rose','Sam','Tina'];
+      var lastNames = ['Johnson','Smith','Davis','Wilson','Martin','Brown','Lee','Garcia','Clark','Wright','Adams','Hill','Baker','Nelson','Carter','Mitchell','Roberts','Turner','Phillips','Campbell'];
+      var today = new Date();
+      function d(offset) { var dt = new Date(today); dt.setDate(dt.getDate() + offset); return dt.toISOString().slice(0, 10); }
+      this._allRows = [];
+      for (var i = 0; i < count; i++) {
+        var fn = firstNames[i % firstNames.length];
+        var ln = lastNames[Math.floor(i / firstNames.length) % lastNames.length];
+        var r = {
+          id: 'r' + (i + 1),
+          name: fn + ' ' + ln,
+          email: fn.toLowerCase() + '.' + ln.toLowerCase() + (i >= firstNames.length * lastNames.length ? i : '') + '@example.com',
+          status: statuses[i % statuses.length],
+          tier: tiers[i % tiers.length],
+          date: d(Math.floor(i / 3) - 5),
+          daterange: '',
+          tasks: [{ id: 't' + (i * 2 + 1), label: 'Task ' + (i + 1), done: i % 3 === 0 }]
+        };
+        if (i % 2 === 0) r.tasks.push({ id: 't' + (i * 2 + 2), label: 'Follow-up', done: false });
+        this._allRows.push(r);
+      }
+      this.totalRows = this._allRows.length;
+    },
+
+    _applyPagination() {
+      if (this.paginationMode === 'pages') {
+        var start = this.page * this.pageSize;
+        this.rows = this._allRows.slice(start, start + this.pageSize);
+      } else {
+        this.page = 0;
+        this.rows = this._allRows.slice(0, this.pageSize);
+      }
+      this.$nextTick(() => {
+        var g = this._getGrid();
+        if (g) g.maxRows = this.rows.length;
+        if (this.paginationMode === 'scroll') this._setupScrollLoad();
+      });
+    },
+
+    setPaginationMode(mode) {
+      this.paginationMode = mode;
+      this.page = 0;
+      this._applyPagination();
+      this.setLastAction('Pagination: ' + mode);
+    },
+
+    goToPage(n) {
+      this.page = n;
+      this._applyPagination();
+      this.setLastAction('Page ' + (n + 1));
+    },
+
+    loadMore() {
+      if (this.paginationMode !== 'scroll') return;
+      var loaded = this.rows.length;
+      if (loaded >= this._allRows.length) return;
+      var next = this._allRows.slice(loaded, loaded + this.pageSize);
+      this.rows = this.rows.concat(next);
+      this.$nextTick(() => {
+        var g = this._getGrid();
+        if (g) g.maxRows = this.rows.length;
+        this._setupScrollLoad();
+      });
+    },
+
+    pageNumbers() {
+      var total = Math.ceil(this._allRows.length / this.pageSize);
+      var current = this.page;
+      var pages = [];
+      var start = Math.max(0, current - 2);
+      var end = Math.min(total, current + 3);
+      if (start > 0) { pages.push(0); if (start > 1) pages.push('...'); }
+      for (var i = start; i < end; i++) pages.push(i);
+      if (end < total) { if (end < total - 1) pages.push('...'); pages.push(total - 1); }
+      return pages;
+    },
+
+    _scrollLoading: false,
+
+    _setupScrollLoad() {
+      if (this.paginationMode !== 'scroll') return;
+      var self = this;
+      this._scrollLoading = false;
+      var wrapper = this.$el.querySelector('.grid-wrapper');
+      if (!wrapper) return;
+      wrapper.addEventListener('scroll', function onScroll() {
+        if (self._scrollLoading) return;
+        if (self.rows.length >= self._allRows.length) { wrapper.removeEventListener('scroll', onScroll); return; }
+        var dist = wrapper.scrollHeight - wrapper.scrollTop - wrapper.clientHeight;
+        if (dist < 300) {
+          self._scrollLoading = true;
+          self.loadMore();
+          setTimeout(function () { self._scrollLoading = false; }, 500);
+        }
+      });
     },
 
     _syncGridState() {
@@ -881,8 +1022,8 @@ function demoApp() {
 
     // ---- Row Data Management ----
     addRow() {
-      const n = this.rows.length + 1;
-      this.rows.push({
+      const n = this._allRows.length + 1;
+      var row = {
         id: 'r' + Date.now(),
         name: 'User ' + n,
         email: 'user' + n + '@example.com',
@@ -891,29 +1032,29 @@ function demoApp() {
         date: new Date().toISOString().slice(0, 10),
         daterange: '',
         tasks: [{ id: 't-new-' + n, label: 'New task', done: false }],
-      });
+      };
+      this._allRows.push(row);
+      this.totalRows = this._allRows.length;
+      this.rows.push(row);
+      var g = this._getGrid();
+      if (g) g.maxRows = this.rows.length;
       this.setLastAction('Row added');
     },
 
     removeRow() {
       if (this.rows.length <= 1) return;
-      this.rows.pop();
-      // Clamp activeRow in child grid
+      var removed = this.rows.pop();
+      var idx = this._allRows.indexOf(removed);
+      if (idx >= 0) this._allRows.splice(idx, 1);
+      this.totalRows = this._allRows.length;
       const g = this._getGrid();
       if (g && g.activeRow >= this.rows.length) g.activeRow = this.rows.length - 1;
       this.setLastAction('Row removed');
     },
 
     resetGrid() {
-      var today = new Date();
-      var d = function (offset) { var dt = new Date(today); dt.setDate(dt.getDate() + offset); return dt.toISOString().slice(0, 10); };
-      this.rows = [
-        { id: 'r1', name: 'Alice Johnson', email: 'alice@example.com', status: 'Active', tier: 'Enterprise', date: d(-2), daterange: d(-5) + ' / ' + d(-3), tasks: [{ id: 't1', label: 'Setup CI/CD', done: true }, { id: 't2', label: 'Write docs', done: false }] },
-        { id: 'r2', name: 'Bob Smith', email: 'bob@example.com', status: 'Paused', tier: 'Premium', date: d(0), daterange: d(0) + ' / ' + d(2), tasks: [{ id: 't3', label: 'Review PR', done: false }] },
-        { id: 'r3', name: 'Carol Davis', email: 'carol@example.com', status: 'Active', tier: 'Free', date: d(1), daterange: d(1) + ' / ' + d(4), tasks: [{ id: 't4', label: 'Fix bug #42', done: true }, { id: 't5', label: 'Deploy v2', done: false }] },
-        { id: 'r4', name: 'Dave Wilson', email: 'dave@example.com', status: 'Archived', tier: 'Enterprise', date: d(3), daterange: '', tasks: [{ id: 't6', label: 'Audit logs', done: true }] },
-        { id: 'r5', name: 'Eve Martin', email: 'eve@example.com', status: 'Active', tier: 'Premium', date: d(5), daterange: d(5) + ' / ' + d(7), tasks: [{ id: 't7', label: 'Update deps', done: false }, { id: 't8', label: 'Write tests', done: false }] },
-      ];
+      this.page = 0;
+      this._applyPagination();
       this.setLastAction('Grid reset');
     },
 
@@ -970,14 +1111,20 @@ function demoApp() {
       const { afterRow } = event.detail;
       const idx = afterRow + 1;
       const n = this.rows.length + 1;
-      this.rows.splice(idx, 0, {
+      var row = {
         id: 'r' + Date.now(),
         name: 'New User',
         email: 'new@example.com',
         status: 'Active',
         tier: 'Free',
         tasks: [],
-      });
+      };
+      this.rows.splice(idx, 0, row);
+      // Also insert into full dataset if within visible range
+      if (idx <= this._allRows.length) {
+        this._allRows.splice(idx, 0, row);
+        this.totalRows = this._allRows.length;
+      }
       this.setLastAction('Row inserted at ' + (idx + 1));
     },
 
@@ -989,6 +1136,8 @@ function demoApp() {
         else if (field === 'tier') this.rows[row][field] = 'Free';
         else if (field === 'tasks') this.rows[row][field] = [];
         else this.rows[row][field] = '';
+        // Also clear in full dataset
+        if (this._allRows[row]) this._allRows[row][field] = this.rows[row][field];
         this.setLastAction('Cell (' + (row+1) + ',' + (col+1) + ') cleared');
       }
     },
@@ -996,7 +1145,10 @@ function demoApp() {
     onClearRow(event) {
       const { row } = event.detail;
       if (this.rows[row]) {
-        this.rows.splice(row, 1);
+        var removed = this.rows.splice(row, 1)[0];
+        var idx = this._allRows.indexOf(removed);
+        if (idx >= 0) this._allRows.splice(idx, 1);
+        this.totalRows = this._allRows.length;
         const g = this._getGrid();
         if (g && g.activeRow >= this.rows.length) g.activeRow = Math.max(0, this.rows.length - 1);
         this.setLastAction('Row ' + (row+1) + ' deleted');
