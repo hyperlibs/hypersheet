@@ -58,6 +58,11 @@
     .hs-pagination-toggle button { padding: 0.2rem 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem; background: #fff; cursor: pointer; font-size: 0.7rem; color: #374151; }
     .hs-pagination-toggle button.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
     .hs-pagination-toggle button:hover:not(.active) { background: #f3f4f6; }
+    .hs-viewport { position: relative; }
+    .hs-viewport-virtual { height: 500px; overflow-y: auto; display: block; border: 1px solid #e5e7eb; border-radius: 0.375rem; }
+    .hs-viewport-virtual .hs-grid { border: none; }
+    .hs-viewport-virtual thead { position: sticky; top: 0; z-index: 10; background: #f9fafb; }
+    .hs-viewport-virtual tbody { min-height: 40px; }
   </style>
 </head>
 <body>
@@ -98,7 +103,7 @@
         <span x-text="rows.length"></span> / <span x-text="totalRows"></span> rows · Cell: (<span x-text="gridActiveRow + 1"></span>, <span x-text="gridActiveCol + 1"></span>)
       </span>
       <span class="hs-pagination-toggle">
-        <button :class="{ active: paginationMode === 'scroll' }" @click="setPaginationMode('scroll')" title="Continuous scroll">↕ Scroll</button>
+        <button :class="{ active: paginationMode === 'virtual' }" @click="setPaginationMode('virtual')" title="Virtual scrolling (smooth)">↕ Virtual</button>
         <button :class="{ active: paginationMode === 'pages' }" @click="setPaginationMode('pages')" title="Numbered pages">⊞ Pages</button>
       </span>
       <button @click="showToast('Press ? for keyboard shortcuts')" style="margin-left:auto;">⌨ Shortcuts</button>
@@ -112,7 +117,13 @@
       -->
       <div id="main-grid"
            x-data="hypersheet({ rows: rows.length, cols: 7, sortable: true })"
-           @keydown.window="handleKey($event)">
+           @keydown.window="handleKey($event)"
+           @active-row-changed.window="scrollToRow($event.detail.row)">
+
+        <!-- Viewport wrapper: scrollable container for virtual mode -->
+        <div class="hs-viewport" ref="viewport"
+             :class="paginationMode === 'virtual' ? 'hs-viewport-virtual' : ''"
+             @scroll="onVirtualScroll($event)">
 
         <table class="hs-grid">
           <thead>
@@ -127,80 +138,82 @@
               <th class="hs-cell">Date Range</th>
             </tr>
           </thead>
-          <tbody>
-            <template x-for="(row, rIdx) in rows" :key="row.id">
-              <tr class="hs-row" :data-id="row.id">
+          <tbody x-ref="tbody"
+                 :style="paginationMode === 'virtual' ? 'display:block; position:relative; height:' + (_allRows.length * rowHeight) + 'px' : ''">
+            <template x-for="(vr, vIdx) in getCurrentRows()" :key="vr.row.id">
+              <tr class="hs-row" :data-id="vr.row.id"
+                  :style="paginationMode === 'virtual' ? 'position:absolute; top:0; transform:translateY(' + vr.y + 'px); left:0; right:0' : ''">
                 <td class="hs-cell hs-drag-handle" style="text-align:center;">⋮⋮</td>
 
                 <!-- Name (Text) -->
                 <td class="hs-cell hs-cell-text"
-                    :data-row="rIdx" data-col="0" data-field="name"
-                    :class="{'hs-focused': focusedKey === rIdx + ':0', 'hs-selected': isSelected(rIdx, 0)}"
-                    @mousedown="handleCellMouseDown(rIdx, 0, $event); $dispatch('cell-focus', {row:rIdx, col:0})"
-                    @mouseenter="handleCellMouseEnter(rIdx, 0)">
-                  <input type="text" class="hs-cell-input" x-model="row.name"
-                         @blur="row.name = $el.value">
+                    :data-row="vr.logicalIndex" data-col="0" data-field="name"
+                    :class="{'hs-focused': focusedKey === vr.logicalIndex + ':0', 'hs-selected': isSelected(vr.logicalIndex, 0)}"
+                    @mousedown="handleCellMouseDown(vr.logicalIndex, 0, $event); $dispatch('cell-focus', {row:vr.logicalIndex, col:0})"
+                    @mouseenter="handleCellMouseEnter(vr.logicalIndex, 0)">
+                  <input type="text" class="hs-cell-input" x-model="vr.row.name"
+                         @blur="vr.row.name = $el.value">
                 </td>
 
                 <!-- Email (Text) -->
                 <td class="hs-cell hs-cell-text"
-                    :data-row="rIdx" data-col="1" data-field="email"
-                    :class="{'hs-focused': focusedKey === rIdx + ':1', 'hs-selected': isSelected(rIdx, 1)}"
-                    @mousedown="handleCellMouseDown(rIdx, 1, $event); $dispatch('cell-focus', {row:rIdx, col:1})"
-                    @mouseenter="handleCellMouseEnter(rIdx, 1)">
-                  <input type="text" class="hs-cell-input" x-model="row.email"
-                         @blur="row.email = $el.value">
+                    :data-row="vr.logicalIndex" data-col="1" data-field="email"
+                    :class="{'hs-focused': focusedKey === vr.logicalIndex + ':1', 'hs-selected': isSelected(vr.logicalIndex, 1)}"
+                    @mousedown="handleCellMouseDown(vr.logicalIndex, 1, $event); $dispatch('cell-focus', {row:vr.logicalIndex, col:1})"
+                    @mouseenter="handleCellMouseEnter(vr.logicalIndex, 1)">
+                  <input type="text" class="hs-cell-input" x-model="vr.row.email"
+                         @blur="vr.row.email = $el.value">
                 </td>
 
                 <!-- Status (Chip) -->
                 <td class="hs-cell hs-cell-chip"
-                    :data-row="rIdx" data-col="2" data-field="status"
-                    :class="{'hs-focused': focusedKey === rIdx + ':2', 'hs-selected': isSelected(rIdx, 2)}"
-                    @mousedown="handleCellMouseDown(rIdx, 2, $event); $dispatch('cell-focus', {row:rIdx, col:2})"
-                    @mouseenter="handleCellMouseEnter(rIdx, 2)"
+                    :data-row="vr.logicalIndex" data-col="2" data-field="status"
+                    :class="{'hs-focused': focusedKey === vr.logicalIndex + ':2', 'hs-selected': isSelected(vr.logicalIndex, 2)}"
+                    @mousedown="handleCellMouseDown(vr.logicalIndex, 2, $event); $dispatch('cell-focus', {row:vr.logicalIndex, col:2})"
+                    @mouseenter="handleCellMouseEnter(vr.logicalIndex, 2)"
                     x-data="{ open: false }">
                   <div @click="open = !open" class="hs-cursor-pointer hs-select-none">
                     <span class="hs-chip"
                           :class="{
-                            'hs-chip-active': row.status === 'Active',
-                            'hs-chip-pending': row.status === 'Paused',
-                            'hs-chip-archived': row.status === 'Archived'
+                            'hs-chip-active': vr.row.status === 'Active',
+                            'hs-chip-pending': vr.row.status === 'Paused',
+                            'hs-chip-archived': vr.row.status === 'Archived'
                           }"
-                          x-text="row.status"></span>
+                          x-text="vr.row.status"></span>
                   </div>
                   <div class="hs-chip-menu" x-show="open" @click.away="open = false" x-transition>
                     <template x-for="s in ['Active','Paused','Archived']" :key="s">
-                      <div class="hs-chip-option" @click="row.status = s; open = false" x-text="s"></div>
+                      <div class="hs-chip-option" @click="vr.row.status = s; open = false" x-text="s"></div>
                     </template>
                   </div>
                 </td>
 
                 <!-- Tier (Dropdown) -->
                 <td class="hs-cell hs-cell-dropdown"
-                    :data-row="rIdx" data-col="3" data-field="tier"
-                    :class="{'hs-focused': focusedKey === rIdx + ':3', 'hs-selected': isSelected(rIdx, 3)}"
-                    @mousedown="handleCellMouseDown(rIdx, 3, $event); $dispatch('cell-focus', {row:rIdx, col:3})"
-                    @mouseenter="handleCellMouseEnter(rIdx, 3)"
+                    :data-row="vr.logicalIndex" data-col="3" data-field="tier"
+                    :class="{'hs-focused': focusedKey === vr.logicalIndex + ':3', 'hs-selected': isSelected(vr.logicalIndex, 3)}"
+                    @mousedown="handleCellMouseDown(vr.logicalIndex, 3, $event); $dispatch('cell-focus', {row:vr.logicalIndex, col:3})"
+                    @mouseenter="handleCellMouseEnter(vr.logicalIndex, 3)"
                     x-data="{ open: false }">
                   <div @click="open = !open" class="hs-dropdown-trigger">
-                    <span x-text="row.tier"></span>
+                    <span x-text="vr.row.tier"></span>
                     <span class="hs-dropdown-arrow">▼</span>
                   </div>
                   <div class="hs-dropdown-menu" x-show="open" @click.away="open = false" x-transition>
                     <template x-for="opt in ['Free','Premium','Enterprise']" :key="opt">
-                      <div class="hs-dropdown-item" @click="row.tier = opt; open = false" x-text="opt"></div>
+                      <div class="hs-dropdown-item" @click="vr.row.tier = opt; open = false" x-text="opt"></div>
                     </template>
                   </div>
                 </td>
 
                 <!-- Tasks (Checklist) -->
                 <td class="hs-cell"
-                    :data-row="rIdx" data-col="4" data-field="tasks"
-                    :class="{'hs-focused': focusedKey === rIdx + ':4', 'hs-selected': isSelected(rIdx, 4)}"
-                    @mousedown="handleCellMouseDown(rIdx, 4, $event); $dispatch('cell-focus', {row:rIdx, col:4})"
-                    @mouseenter="handleCellMouseEnter(rIdx, 4)">
+                    :data-row="vr.logicalIndex" data-col="4" data-field="tasks"
+                    :class="{'hs-focused': focusedKey === vr.logicalIndex + ':0', 'hs-selected': isSelected(vr.logicalIndex, 4)}"
+                    @mousedown="handleCellMouseDown(vr.logicalIndex, 4, $event); $dispatch('cell-focus', {row:vr.logicalIndex, col:4})"
+                    @mouseenter="handleCellMouseEnter(vr.logicalIndex, 4)">
                   <div class="hs-checklist">
-                    <template x-for="(task, tIdx) in row.tasks" :key="tIdx">
+                    <template x-for="(task, tIdx) in vr.row.tasks" :key="tIdx">
                       <label>
                         <input type="checkbox" x-model="task.done">
                         <span x-text="task.label"></span>
@@ -211,16 +224,16 @@
 
                 <!-- Date (Date Picker) -->
                 <td class="hs-cell hs-cell-date"
-                    :data-row="rIdx" data-col="5" data-field="date"
-                    :class="{'hs-focused': focusedKey === rIdx + ':5', 'hs-selected': isSelected(rIdx, 5)}"
-                    @mousedown="handleCellMouseDown(rIdx, 5, $event); $dispatch('cell-focus', {row:rIdx, col:5})"
-                    @mouseenter="handleCellMouseEnter(rIdx, 5)">
-                  <input type="text" class="hs-cell-input" x-model="row.date"
-                         @focus="openDatePicker(rIdx, 5)"
+                    :data-row="vr.logicalIndex" data-col="5" data-field="date"
+                    :class="{'hs-focused': focusedKey === vr.logicalIndex + ':5', 'hs-selected': isSelected(vr.logicalIndex, 5)}"
+                    @mousedown="handleCellMouseDown(vr.logicalIndex, 5, $event); $dispatch('cell-focus', {row:vr.logicalIndex, col:5})"
+                    @mouseenter="handleCellMouseEnter(vr.logicalIndex, 5)">
+                  <input type="text" class="hs-cell-input" x-model="vr.row.date"
+                         @focus="openDatePicker(vr.logicalIndex, 5)"
                          @blur="setTimeout(() => closeDatePicker(), 200)"
                          placeholder="YYYY-MM-DD"
                          style="cursor:pointer;">
-                  <div class="hs-datepicker" x-show="datePickerTarget && datePickerTarget.row === rIdx && datePickerTarget.col === 5"
+                  <div class="hs-datepicker" x-show="datePickerTarget && datePickerTarget.row === vr.logicalIndex && datePickerTarget.col === 5"
                        @click.outside="closeDatePicker()" x-cloak>
                     <div class="hs-datepicker-header">
                       <button class="hs-datepicker-nav" @click="dpPrevMonth" type="button">◀</button>
@@ -250,16 +263,16 @@
 
                 <!-- Date Range -->
                 <td class="hs-cell hs-cell-daterange"
-                    :data-row="rIdx" data-col="6" data-field="daterange"
-                    :class="{'hs-focused': focusedKey === rIdx + ':6', 'hs-selected': isSelected(rIdx, 6)}"
-                    @mousedown="handleCellMouseDown(rIdx, 6, $event); $dispatch('cell-focus', {row:rIdx, col:6})"
-                    @mouseenter="handleCellMouseEnter(rIdx, 6)">
-                  <input type="text" class="hs-cell-input" x-model="row.daterange"
-                         @focus="openDateRange(rIdx, 6)"
+                    :data-row="vr.logicalIndex" data-col="6" data-field="daterange"
+                    :class="{'hs-focused': focusedKey === vr.logicalIndex + ':6', 'hs-selected': isSelected(vr.logicalIndex, 6)}"
+                    @mousedown="handleCellMouseDown(vr.logicalIndex, 6, $event); $dispatch('cell-focus', {row:vr.logicalIndex, col:6})"
+                    @mouseenter="handleCellMouseEnter(vr.logicalIndex, 6)">
+                  <input type="text" class="hs-cell-input" x-model="vr.row.daterange"
+                         @focus="openDateRange(vr.logicalIndex, 6)"
                          @blur="setTimeout(() => closeDateRange(), 200)"
                          placeholder="Start / End"
                          style="cursor:pointer;">
-                  <div class="hs-daterange" x-show="dateRangeTarget && dateRangeTarget.row === rIdx && dateRangeTarget.col === 6"
+                  <div class="hs-daterange" x-show="dateRangeTarget && dateRangeTarget.row === vr.logicalIndex && dateRangeTarget.col === 6"
                        @click.outside="closeDateRange()" x-cloak>
                     <div class="hs-daterange-inputs">
                       <input type="date" x-model="dateRangeStart" placeholder="Start">
@@ -272,6 +285,8 @@
             </template>
           </tbody>
         </table>
+
+        </div> <!-- /hs-viewport -->
 
         <!-- Pagination: Pages mode -->
         <div class="hs-pagination" x-show="paginationMode === 'pages'" x-cloak>
@@ -288,11 +303,10 @@
           <span style="font-size:0.7rem;color:#9ca3af;">Page <span x-text="page + 1"></span> of <span x-text="Math.ceil(totalRows / pageSize)"></span></span>
         </div>
 
-        <!-- Scroll mode: load indicator -->
-        <div x-show="paginationMode === 'scroll' && rows.length < totalRows" x-cloak
-             style="text-align:center;padding:1rem 0;font-size:0.75rem;color:#9ca3af;">
-          <span x-show="_scrollLoading">↻ Loading more rows...</span>
-          <span x-show="!_scrollLoading">↓ Scroll down to load more</span>
+        <!-- Virtual mode status indicator -->
+        <div x-show="paginationMode === 'virtual'" x-cloak
+             style="text-align:center;padding:0.5rem 0;font-size:0.7rem;color:#9ca3af;border-top:1px solid #e5e7eb;margin-top:0.25rem;">
+          Showing <span x-text="getCurrentRows().length"></span> of <span x-text="totalRows"></span> rows · Scroll for more
         </div>
       </div>
     </div>
@@ -865,6 +879,14 @@ function demoApp() {
       if (this.paginationMode === 'pages') {
         var start = this.page * this.pageSize;
         this.rows = this._allRows.slice(start, start + this.pageSize);
+      } else if (this.paginationMode === 'virtual') {
+        // Virtual mode: keep all rows "visible" to the grid, only render visible ones
+        this.rows = this._allRows;
+        var g = this._getGrid();
+        if (g) {
+          g.virtualScrollTop = 0;
+          if (g.$el) g.$el.scrollTop = 0;
+        }
       } else {
         this.page = 0;
         this.rows = this._allRows.slice(0, this.pageSize);
@@ -916,6 +938,44 @@ function demoApp() {
 
     _scrollLoading: false,
 
+    getCurrentRows() {
+      // Returns an array of { row, logicalIndex, y? } for the current pagination mode
+      if (this.paginationMode === 'virtual') {
+        return this.getVirtualRows();
+      } else if (this.paginationMode === 'pages') {
+        var self = this;
+        return this.rows.map(function (r, i) {
+          return { row: r, logicalIndex: self.page * self.pageSize + i, y: 0 };
+        });
+      } else {
+        return this.rows.map(function (r, i) {
+          return { row: r, logicalIndex: i, y: 0 };
+        });
+      }
+    },
+
+    getVirtualRows() {
+      var g = this._getGrid();
+      if (!g || !g.getVirtualRows) return this._allRows.slice(0, this.pageSize);
+      var rh = g.rowHeight;
+      var scrollTop = g.virtualScrollTop;
+      var el = document.getElementById('main-grid');
+      var viewportH = el ? el.clientHeight : 600;
+      var buffer = g.bufferSize;
+      var total = this._allRows.length;
+      var startIdx = Math.max(0, Math.floor(scrollTop / rh) - buffer);
+      var endIdx = Math.min(total, Math.ceil((scrollTop + viewportH) / rh) + buffer);
+      var result = [];
+      for (var i = startIdx; i < endIdx; i++) {
+        result.push({
+          row: this._allRows[i],
+          y: i * rh,
+          logicalIndex: i
+        });
+      }
+      return result;
+    },
+
     _setupScrollLoad() {
       if (this.paginationMode !== 'scroll') return;
       var self = this;
@@ -938,10 +998,15 @@ function demoApp() {
       const grid = document.getElementById('main-grid');
       if (!grid || !grid._x_dataStack) return;
       const data = grid._x_dataStack[0];
+      var prevRow = this.gridActiveRow;
       this.gridActiveRow = data.activeRow;
       this.gridActiveCol = data.activeCol;
       this.gridEditMode = data.editMode;
       this.selectionSummary = data.selectionSummary;
+      // Auto-scroll in virtual mode when active row changes
+      if (this.paginationMode === 'virtual' && data.activeRow !== prevRow && data.scrollToRow) {
+        data.scrollToRow(data.activeRow);
+      }
     },
 
     _getGrid() {

@@ -64,6 +64,14 @@ document.addEventListener('alpine:init', () => {
     isSelecting: false,
     selectionSummary: null,
 
+    // --- Cell Value Cache (for virtual scrolling) ---
+    _cellValueCache: {},
+
+    // --- Virtual Scrolling State ---
+    virtualScrollTop: 0,
+    rowHeight: 40,
+    bufferSize: 10,
+
     // --- Date Picker State ---
     datePickerTarget: null,   // { row, col } or null
     datePickerYear: null,
@@ -398,10 +406,17 @@ document.addEventListener('alpine:init', () => {
       var values = [];
       for (var r = this.selectionRange.minRow; r <= this.selectionRange.maxRow; r++) {
         for (var c = this.selectionRange.minCol; c <= this.selectionRange.maxCol; c++) {
+          // Try DOM first (fast for visible cells)
           var input = this.$el.querySelector(
             '[data-row="' + r + '"][data-col="' + c + '"] .hs-cell-input'
           );
-          if (input) values.push(input.value);
+          if (input) {
+            values.push(input.value);
+          } else {
+            // Fall back to cache (for virtual/non-visible cells)
+            var cached = this._cellValueCache[r + ':' + c];
+            values.push(cached !== undefined ? cached : '');
+          }
         }
       }
       return values;
@@ -476,6 +491,8 @@ document.addEventListener('alpine:init', () => {
     },
 
     setCellValue(row, col, value) {
+      // Cache the value (for virtual scrolling when DOM may not exist)
+      this._cellValueCache[row + ':' + col] = value;
       const input = this.$el.querySelector(
         `[data-row="${row}"][data-col="${col}"] .hs-cell-input`
       );
@@ -935,6 +952,44 @@ document.addEventListener('alpine:init', () => {
         this.setCellValue(row, col, this.dateRangeStart + ' / ' + this.dateRangeEnd);
       }
       this.closeDateRange();
+    },
+
+    // --- Virtual Scrolling ---
+    getVirtualRows(allRows) {
+      var total = allRows.length;
+      var rh = this.rowHeight;
+      var scrollTop = this.virtualScrollTop;
+      var viewportH = this.$el && this.$el.clientHeight ? this.$el.clientHeight : 600;
+      var buffer = this.bufferSize;
+      var startIdx = Math.max(0, Math.floor(scrollTop / rh) - buffer);
+      var endIdx = Math.min(total, Math.ceil((scrollTop + viewportH) / rh) + buffer);
+      var result = [];
+      for (var i = startIdx; i < endIdx; i++) {
+        result.push({
+          row: allRows[i],
+          y: i * rh,
+          logicalIndex: i
+        });
+      }
+      return result;
+    },
+
+    onVirtualScroll(event) {
+      var target = event.target;
+      if (target) this.virtualScrollTop = target.scrollTop;
+    },
+
+    scrollToRow(rowIndex) {
+      var el = this.$el && this.$el.querySelector('.hs-viewport');
+      if (!el) el = this.$el;
+      if (!el) return;
+      var rh = this.rowHeight;
+      var viewportH = el.clientHeight;
+      var targetTop = rowIndex * rh;
+      var currentScroll = el.scrollTop;
+      if (targetTop < currentScroll || targetTop > currentScroll + viewportH - rh) {
+        el.scrollTop = targetTop - viewportH / 2 + rh / 2;
+      }
     },
 
     // --- Internal Helpers ---
